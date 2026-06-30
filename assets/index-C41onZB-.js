@@ -111,12 +111,12 @@ function Zb() {
             return false
         }
     })
-    // 后台密码验证状态
+    // 后台密码验证状态 - 独立于登录流程
+    const [showPasswordModal, setShowPasswordModal] = I.useState(() => {
+        return localStorage.getItem('admin_auth') !== '1'
+    })
     const [adminPassword, setAdminPassword] = I.useState('')
     const [passwordError, setPasswordError] = I.useState('')
-    const [isAuthenticated, setIsAuthenticated] = I.useState(() => {
-        return localStorage.getItem('admin_auth') === '1'
-    })
     const [isVerifying, setIsVerifying] = I.useState(false)
 
     const G = I.useCallback(() => {
@@ -131,7 +131,7 @@ function Zb() {
         }
     }, [])
 
-    // 后台密码验证处理
+    // 后台密码验证
     const handleAdminLogin = (e) => {
         e.preventDefault()
         if (!adminPassword.trim()) {
@@ -141,10 +141,9 @@ function Zb() {
         setIsVerifying(true)
         setPasswordError('')
         
-        // 验证密码：123
         if (adminPassword === '123') {
             localStorage.setItem('admin_auth', '1')
-            setIsAuthenticated(true)
+            setShowPasswordModal(false)
             setAdminPassword('')
             setPasswordError('')
             setIsVerifying(false)
@@ -155,10 +154,10 @@ function Zb() {
         }
     }
 
-    // 退出后台模式
+    // 退出后台
     const handleAdminLogout = () => {
         localStorage.removeItem('admin_auth')
-        setIsAuthenticated(false)
+        setShowPasswordModal(true)
     }
 
     I.useEffect(() => {
@@ -191,10 +190,10 @@ function Zb() {
 
     const V = I.useCallback(() => X(true), [])
 
-    // 后台密码登录界面
-    if (!isAuthenticated) {
+    // 密码弹窗 - 独立显示，覆盖所有内容
+    if (showPasswordModal) {
         return S.jsx("div", {
-            className: "fixed inset-0 w-full h-full flex items-center justify-center bg-gradient-to-b from-[#f6fafd] via-[#ecf3f9] to-[#e6eef5]",
+            className: "fixed inset-0 w-full h-full flex items-center justify-center bg-gradient-to-b from-[#f6fafd] via-[#ecf3f9] to-[#e6eef5] z-[9999]",
             children: S.jsx("div", {
                 className: "w-full max-w-sm mx-4",
                 children: S.jsxs("div", {
@@ -225,7 +224,7 @@ function Zb() {
                                         setAdminPassword(e.target.value)
                                         setPasswordError('')
                                     },
-                                    className: "w-full bg-white/50 border border-white/60 shadow-sm backdrop-blur-md rounded-2xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#89b6d3]/20 focus:border-[#89b6d3] transition-all text-slate-800 outline-none placeholder-slate-400",
+                                    className: "w-full bg-white/50 border border-white/60 shadow-sm backdrop-blur-md rounded-2xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#89b6d3]/20 focus:border-[#89b6d3] transition-all text-slate-800 outline-none placeholder-slate-400 text-center text-lg tracking-widest",
                                     autoFocus: true,
                                     disabled: isVerifying
                                 }),
@@ -238,6 +237,10 @@ function Zb() {
                                     disabled: isVerifying,
                                     className: "w-full bg-[#89b6d3] hover:bg-[#7aa8c7] disabled:opacity-50 text-white font-medium py-3 rounded-2xl transition-all shadow-sm",
                                     children: isVerifying ? "验证中..." : "进入"
+                                }),
+                                S.jsx("p", {
+                                    className: "text-xs text-slate-400 text-center mt-2",
+                                    children: "默认密码: 123"
                                 })
                             ]
                         })
@@ -247,7 +250,7 @@ function Zb() {
         })
     }
 
-    // 已认证 - 显示正常内容
+    // 正常内容 - 右上角显示退出后台按钮
     if (a || (s && h)) {
         return S.jsx("div", {
             className: "w-full h-screen",
@@ -347,6 +350,5 @@ function Zb() {
         ]
     })
 }
-
 
 "serviceWorker"in navigator&&window.addEventListener("load",()=>{{navigator.serviceWorker.register("/service-worker.js").catch(s=>{console.error("Service worker registration failed:",s)});return}});const Lm=window.location.pathname,Pb=document.getElementById("root"),Wb=Bv.createRoot(Pb);Wb.render(S.jsx(I.StrictMode,{children:Lm==="/admin"?S.jsx(qb,{}):Lm==="/claim"?S.jsx(Hb,{}):S.jsx(Zb,{})}));export{Kb as D,Hv as E,kv as R,Bm as _,Vb as a,Fb as c,Rv as g,S as j,I as r,Xe as s};
