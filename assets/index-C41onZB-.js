@@ -92,8 +92,7 @@ Resources:`;for(const H of g){if(!H||typeof H!="string")throw new Error(`@supaba
 ${X}`}class Ye extends Error{constructor({message:a,code:l,cause:r,name:c}){var h;super(a,{cause:r}),this.__isWebAuthnError=!0,this.name=(h=c??(r instanceof Error?r.name:void 0))!==null&&h!==void 0?h:"Unknown Error",this.code=l}}class Zl extends Ye{constructor(a,l){super({code:"ERROR_PASSTHROUGH_SEE_CAUSE_PROPERTY",cause:l,message:a}),this.name="WebAuthnUnknownError",this.originalError=l}}function Py({error:s,options:a}){var l,r,c;const{publicKey:h}=a;if(!h)throw Error("options was missing required publicKey property");if(s.name==="AbortError"){if(a.signal instanceof AbortSignal)return new Ye({message:"Registration ceremony was sent an abort signal",code:"ERROR_CEREMONY_ABORTED",cause:s})}else if(s.name==="ConstraintError"){if(((l=h.authenticatorSelection)===null||l===void 0?void 0:l.requireResidentKey)===!0)return new Ye({message:"Discoverable credentials were required but no available authenticator supported it",code:"ERROR_AUTHENTICATOR_MISSING_DISCOVERABLE_CREDENTIAL_SUPPORT",cause:s});if(a.mediation==="conditional"&&((r=h.authenticatorSelection)===null||r===void 0?void 0:r.userVerification)==="required")return new Ye({message:"User verification was required during automatic registration but it could not be performed",code:"ERROR_AUTO_REGISTER_USER_VERIFICATION_FAILURE",cause:s});if(((c=h.authenticatorSelection)===null||c===void 0?void 0:c.userVerification)==="required")return new Ye({message:"User verification was required but no available authenticator supported it",code:"ERROR_AUTHENTICATOR_MISSING_USER_VERIFICATION_SUPPORT",cause:s})}else{if(s.name==="InvalidStateError")return new Ye({message:"The authenticator was previously registered",code:"ERROR_AUTHENTICATOR_PREVIOUSLY_REGISTERED",cause:s});if(s.name==="NotAllowedError")return new Ye({message:s.message,code:"ERROR_PASSTHROUGH_SEE_CAUSE_PROPERTY",cause:s});if(s.name==="NotSupportedError")return h.pubKeyCredParams.filter(m=>m.type==="public-key").length===0?new Ye({message:'No entry in pubKeyCredParams was of type "public-key"',code:"ERROR_MALFORMED_PUBKEYCREDPARAMS",cause:s}):new Ye({message:"No available authenticator supported any of the specified pubKeyCredParams algorithms",code:"ERROR_AUTHENTICATOR_NO_SUPPORTED_PUBKEYCREDPARAMS_ALG",cause:s});if(s.name==="SecurityError"){const f=window.location.hostname;if(ng(f)){if(h.rp.id!==f)return new Ye({message:`The RP ID "${h.rp.id}" is invalid for this domain`,code:"ERROR_INVALID_RP_ID",cause:s})}else return new Ye({message:`${window.location.hostname} is an invalid domain`,code:"ERROR_INVALID_DOMAIN",cause:s})}else if(s.name==="TypeError"){if(h.user.id.byteLength<1||h.user.id.byteLength>64)return new Ye({message:"User ID was not between 1 and 64 characters",code:"ERROR_INVALID_USER_ID_LENGTH",cause:s})}else if(s.name==="UnknownError")return new Ye({message:"The authenticator was unable to process the specified options, or could not create a new credential",code:"ERROR_AUTHENTICATOR_GENERAL_ERROR",cause:s})}return new Ye({message:"a Non-Webauthn related error has occurred",code:"ERROR_PASSTHROUGH_SEE_CAUSE_PROPERTY",cause:s})}function Wy({error:s,options:a}){const{publicKey:l}=a;if(!l)throw Error("options was missing required publicKey property");if(s.name==="AbortError"){if(a.signal instanceof AbortSignal)return new Ye({message:"Authentication ceremony was sent an abort signal",code:"ERROR_CEREMONY_ABORTED",cause:s})}else{if(s.name==="NotAllowedError")return new Ye({message:s.message,code:"ERROR_PASSTHROUGH_SEE_CAUSE_PROPERTY",cause:s});if(s.name==="SecurityError"){const r=window.location.hostname;if(ng(r)){if(l.rpId!==r)return new Ye({message:`The RP ID "${l.rpId}" is invalid for this domain`,code:"ERROR_INVALID_RP_ID",cause:s})}else return new Ye({message:`${window.location.hostname} is an invalid domain`,code:"ERROR_INVALID_DOMAIN",cause:s})}else if(s.name==="UnknownError")return new Ye({message:"The authenticator was unable to process the specified options, or could not create a new assertion signature",code:"ERROR_AUTHENTICATOR_GENERAL_ERROR",cause:s})}return new Ye({message:"a Non-Webauthn related error has occurred",code:"ERROR_PASSTHROUGH_SEE_CAUSE_PROPERTY",cause:s})}class Fy{createNewAbortSignal(){if(this.controller){const l=new Error("Cancelling existing WebAuthn API call for new one");l.name="AbortError",this.controller.abort(l)}const a=new AbortController;return this.controller=a,a.signal}cancelCeremony(){if(this.controller){const a=new Error("Manually cancelling existing WebAuthn API call");a.name="AbortError",this.controller.abort(a),this.controller=void 0}}}const eb=new Fy;function tb(s){if(!s)throw new Error("Credential creation options are required");if(typeof PublicKeyCredential<"u"&&"parseCreationOptionsFromJSON"in PublicKeyCredential&&typeof PublicKeyCredential.parseCreationOptionsFromJSON=="function")return PublicKeyCredential.parseCreationOptionsFromJSON(s);const{challenge:a,user:l,excludeCredentials:r}=s,c=Wl(s,["challenge","user","excludeCredentials"]),h=hi(a).buffer,f=Object.assign(Object.assign({},l),{id:hi(l.id).buffer}),m=Object.assign(Object.assign({},c),{challenge:h,user:f});if(r&&r.length>0){m.excludeCredentials=new Array(r.length);for(let v=0;v<r.length;v++){const g=r[v];m.excludeCredentials[v]=Object.assign(Object.assign({},g),{id:hi(g.id).buffer,type:g.type||"public-key",transports:g.transports})}}return m}function nb(s){if(!s)throw new Error("Credential request options are required");if(typeof PublicKeyCredential<"u"&&"parseRequestOptionsFromJSON"in PublicKeyCredential&&typeof PublicKeyCredential.parseRequestOptionsFromJSON=="function")return PublicKeyCredential.parseRequestOptionsFromJSON(s);const{challenge:a,allowCredentials:l}=s,r=Wl(s,["challenge","allowCredentials"]),c=hi(a).buffer,h=Object.assign(Object.assign({},r),{challenge:c});if(l&&l.length>0){h.allowCredentials=new Array(l.length);for(let f=0;f<l.length;f++){const m=l[f];h.allowCredentials[f]=Object.assign(Object.assign({},m),{id:hi(m.id).buffer,type:m.type||"public-key",transports:m.transports})}}return h}function ab(s){var a;if("toJSON"in s&&typeof s.toJSON=="function")return s.toJSON();const l=s;return{id:s.id,rawId:s.id,response:{attestationObject:ga(new Uint8Array(s.response.attestationObject)),clientDataJSON:ga(new Uint8Array(s.response.clientDataJSON))},type:"public-key",clientExtensionResults:s.getClientExtensionResults(),authenticatorAttachment:(a=l.authenticatorAttachment)!==null&&a!==void 0?a:void 0}}function ib(s){var a;if("toJSON"in s&&typeof s.toJSON=="function")return s.toJSON();const l=s,r=s.getClientExtensionResults(),c=s.response;return{id:s.id,rawId:s.id,response:{authenticatorData:ga(new Uint8Array(c.authenticatorData)),clientDataJSON:ga(new Uint8Array(c.clientDataJSON)),signature:ga(new Uint8Array(c.signature)),userHandle:c.userHandle?ga(new Uint8Array(c.userHandle)):void 0},type:"public-key",clientExtensionResults:r,authenticatorAttachment:(a=l.authenticatorAttachment)!==null&&a!==void 0?a:void 0}}function ng(s){return s==="localhost"||/^([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}$/i.test(s)}function Nm(){var s,a;return!!(st()&&"PublicKeyCredential"in window&&window.PublicKeyCredential&&"credentials"in navigator&&typeof((s=navigator==null?void 0:navigator.credentials)===null||s===void 0?void 0:s.create)=="function"&&typeof((a=navigator==null?void 0:navigator.credentials)===null||a===void 0?void 0:a.get)=="function")}async function sb(s){try{const a=await navigator.credentials.create(s);return a?a instanceof PublicKeyCredential?{data:a,error:null}:{data:null,error:new Zl("Browser returned unexpected credential type",a)}:{data:null,error:new Zl("Empty credential response",a)}}catch(a){return{data:null,error:Py({error:a,options:s})}}}async function lb(s){try{const a=await navigator.credentials.get(s);return a?a instanceof PublicKeyCredential?{data:a,error:null}:{data:null,error:new Zl("Browser returned unexpected credential type",a)}:{data:null,error:new Zl("Empty credential response",a)}}catch(a){return{data:null,error:Wy({error:a,options:s})}}}const rb={hints:["security-key"],authenticatorSelection:{authenticatorAttachment:"cross-platform",requireResidentKey:!1,userVerification:"preferred",residentKey:"discouraged"},attestation:"direct"},ub={userVerification:"preferred",hints:["security-key"],attestation:"direct"};function Pl(...s){const a=c=>c!==null&&typeof c=="object"&&!Array.isArray(c),l=c=>c instanceof ArrayBuffer||ArrayBuffer.isView(c),r={};for(const c of s)if(c)for(const h in c){const f=c[h];if(f!==void 0)if(Array.isArray(f))r[h]=f;else if(l(f))r[h]=f;else if(a(f)){const m=r[h];a(m)?r[h]=Pl(m,f):r[h]=Pl(f)}else r[h]=f}return r}function ob(s,a){return Pl(rb,s,a||{})}function cb(s,a){return Pl(ub,s,a||{})}class hb{constructor(a){this.client=a,this.enroll=this._enroll.bind(this),this.challenge=this._challenge.bind(this),this.verify=this._verify.bind(this),this.authenticate=this._authenticate.bind(this),this.register=this._register.bind(this)}async _enroll(a){return this.client.mfa.enroll(Object.assign(Object.assign({},a),{factorType:"webauthn"}))}async _challenge({factorId:a,webauthn:l,friendlyName:r,signal:c},h){var f;try{const{data:m,error:v}=await this.client.mfa.challenge({factorId:a,webauthn:l});if(!m)return{data:null,error:v};const g=c??eb.createNewAbortSignal();if(m.webauthn.type==="create"){const{user:y}=m.webauthn.credential_options.publicKey;if(!y.name){const _=r;if(_)y.name=`${y.id}:${_}`;else{const x=(await this.client.getUser()).data.user,j=((f=x==null?void 0:x.user_metadata)===null||f===void 0?void 0:f.name)||(x==null?void 0:x.email)||(x==null?void 0:x.id)||"User";y.name=`${y.id}:${j}`}}y.displayName||(y.displayName=y.name)}switch(m.webauthn.type){case"create":{const y=ob(m.webauthn.credential_options.publicKey,h==null?void 0:h.create),{data:_,error:T}=await sb({publicKey:y,signal:g});return _?{data:{factorId:a,challengeId:m.id,webauthn:{type:m.webauthn.type,credential_response:_}},error:null}:{data:null,error:T}}case"request":{const y=cb(m.webauthn.credential_options.publicKey,h==null?void 0:h.request),{data:_,error:T}=await lb(Object.assign(Object.assign({},m.webauthn.credential_options),{publicKey:y,signal:g}));return _?{data:{factorId:a,challengeId:m.id,webauthn:{type:m.webauthn.type,credential_response:_}},error:null}:{data:null,error:T}}}}catch(m){return W(m)?{data:null,error:m}:{data:null,error:new ma("Unexpected error in challenge",m)}}}async _verify({challengeId:a,factorId:l,webauthn:r}){return this.client.mfa.verify({factorId:l,challengeId:a,webauthn:r})}async _authenticate({factorId:a,webauthn:{rpId:l=typeof window<"u"?window.location.hostname:void 0,rpOrigins:r=typeof window<"u"?[window.location.origin]:void 0,signal:c}={}},h){if(!l)return{data:null,error:new ys("rpId is required for WebAuthn authentication")};try{if(!Nm())return{data:null,error:new ma("Browser does not support WebAuthn",null)};const{data:f,error:m}=await this.challenge({factorId:a,webauthn:{rpId:l,rpOrigins:r},signal:c},{request:h});if(!f)return{data:null,error:m};const{webauthn:v}=f;return this._verify({factorId:a,challengeId:f.challengeId,webauthn:{type:v.type,rpId:l,rpOrigins:r,credential_response:v.credential_response}})}catch(f){return W(f)?{data:null,error:f}:{data:null,error:new ma("Unexpected error in authenticate",f)}}}async _register({friendlyName:a,webauthn:{rpId:l=typeof window<"u"?window.location.hostname:void 0,rpOrigins:r=typeof window<"u"?[window.location.origin]:void 0,signal:c}={}},h){if(!l)return{data:null,error:new ys("rpId is required for WebAuthn registration")};try{if(!Nm())return{data:null,error:new ma("Browser does not support WebAuthn",null)};const{data:f,error:m}=await this._enroll({friendlyName:a});if(!f)return await this.client.mfa.listFactors().then(y=>{var _;return(_=y.data)===null||_===void 0?void 0:_.all.find(T=>T.factor_type==="webauthn"&&T.friendly_name===a&&T.status!=="unverified")}).then(y=>y?this.client.mfa.unenroll({factorId:y==null?void 0:y.id}):void 0),{data:null,error:m};const{data:v,error:g}=await this._challenge({factorId:f.id,friendlyName:f.friendly_name,webauthn:{rpId:l,rpOrigins:r},signal:c},{create:h});return v?this._verify({factorId:f.id,challengeId:v.challengeId,webauthn:{rpId:l,rpOrigins:r,type:v.webauthn.type,credential_response:v.webauthn.credential_response}}):{data:null,error:g}}catch(f){return W(f)?{data:null,error:f}:{data:null,error:new ma("Unexpected error in register",f)}}}}Jy();const fb={url:oy,storageKey:cy,autoRefreshToken:!0,persistSession:!0,detectSessionInUrl:!0,headers:hy,flowType:"implicit",debug:!1,hasCustomAuthorizationHeader:!1,throwOnError:!1,lockAcquireTimeout:5e3,skipAutoInitialize:!1};async function km(s,a,l){return await l()}const si={};class bs{get jwks(){var a,l;return(l=(a=si[this.storageKey])===null||a===void 0?void 0:a.jwks)!==null&&l!==void 0?l:{keys:[]}}set jwks(a){si[this.storageKey]=Object.assign(Object.assign({},si[this.storageKey]),{jwks:a})}get jwks_cached_at(){var a,l;return(l=(a=si[this.storageKey])===null||a===void 0?void 0:a.cachedAt)!==null&&l!==void 0?l:Number.MIN_SAFE_INTEGER}set jwks_cached_at(a){si[this.storageKey]=Object.assign(Object.assign({},si[this.storageKey]),{cachedAt:a})}constructor(a){var l,r,c;this.userStorage=null,this.memoryStorage=null,this.stateChangeEmitters=new Map,this.autoRefreshTicker=null,this.autoRefreshTickTimeout=null,this.visibilityChangedCallback=null,this.refreshingDeferred=null,this.initializePromise=null,this.detectSessionInUrl=!0,this.hasCustomAuthorizationHeader=!1,this.suppressGetSessionWarning=!1,this.lockAcquired=!1,this.pendingInLock=[],this.broadcastChannel=null,this.logger=console.log;const h=Object.assign(Object.assign({},fb),a);if(this.storageKey=h.storageKey,this.instanceID=(l=bs.nextInstanceID[this.storageKey])!==null&&l!==void 0?l:0,bs.nextInstanceID[this.storageKey]=this.instanceID+1,this.logDebugMessages=!!h.debug,typeof h.debug=="function"&&(this.logger=h.debug),this.instanceID>0&&st()){const f=`${this._logPrefix()} Multiple GoTrueClient instances detected in the same browser context. It is not an error, but this should be avoided as it may produce undefined behavior when used concurrently under the same storage key.`;console.warn(f),this.logDebugMessages&&console.trace(f)}if(this.persistSession=h.persistSession,this.autoRefreshToken=h.autoRefreshToken,this.admin=new Yy({url:h.url,headers:h.headers,fetch:h.fetch}),this.url=h.url,this.headers=h.headers,this.fetch=Fm(h.fetch),this.lock=h.lock||km,this.detectSessionInUrl=h.detectSessionInUrl,this.flowType=h.flowType,this.hasCustomAuthorizationHeader=h.hasCustomAuthorizationHeader,this.throwOnError=h.throwOnError,this.lockAcquireTimeout=h.lockAcquireTimeout,h.lock?this.lock=h.lock:this.persistSession&&st()&&(!((r=globalThis==null?void 0:globalThis.navigator)===null||r===void 0)&&r.locks)?this.lock=Xy:this.lock=km,this.jwks||(this.jwks={keys:[]},this.jwks_cached_at=Number.MIN_SAFE_INTEGER),this.mfa={verify:this._verify.bind(this),enroll:this._enroll.bind(this),unenroll:this._unenroll.bind(this),challenge:this._challenge.bind(this),listFactors:this._listFactors.bind(this),challengeAndVerify:this._challengeAndVerify.bind(this),getAuthenticatorAssuranceLevel:this._getAuthenticatorAssuranceLevel.bind(this),webauthn:new hb(this)},this.oauth={getAuthorizationDetails:this._getAuthorizationDetails.bind(this),approveAuthorization:this._approveAuthorization.bind(this),denyAuthorization:this._denyAuthorization.bind(this),listGrants:this._listOAuthGrants.bind(this),revokeGrant:this._revokeOAuthGrant.bind(this)},this.persistSession?(h.storage?this.storage=h.storage:Wm()?this.storage=globalThis.localStorage:(this.memoryStorage={},this.storage=Cm(this.memoryStorage)),h.userStorage&&(this.userStorage=h.userStorage)):(this.memoryStorage={},this.storage=Cm(this.memoryStorage)),st()&&globalThis.BroadcastChannel&&this.persistSession&&this.storageKey){try{this.broadcastChannel=new globalThis.BroadcastChannel(this.storageKey)}catch(f){console.error("Failed to create a new BroadcastChannel, multi-tab state changes will not be available",f)}(c=this.broadcastChannel)===null||c===void 0||c.addEventListener("message",async f=>{this._debug("received broadcast notification from other tab or client",f);try{await this._notifyAllSubscribers(f.data.event,f.data.session,!1)}catch(m){this._debug("#broadcastChannel","error",m)}})}h.skipAutoInitialize||this.initialize().catch(f=>{this._debug("#initialize()","error",f)})}isThrowOnErrorEnabled(){return this.throwOnError}_returnResult(a){if(this.throwOnError&&a&&a.error)throw a.error;return a}_logPrefix(){return`GoTrueClient@${this.storageKey}:${this.instanceID} (${Im}) ${new Date().toISOString()}`}_debug(...a){return this.logDebugMessages&&this.logger(this._logPrefix(),...a),this}async initialize(){return this.initializePromise?await this.initializePromise:(this.initializePromise=(async()=>await this._acquireLock(this.lockAcquireTimeout,async()=>await this._initialize()))(),await this.initializePromise)}async _initialize(){var a;try{let l={},r="none";if(st()&&(l=Ay(window.location.href),this._isImplicitGrantCallback(l)?r="implicit":await this._isPKCECallback(l)&&(r="pkce")),st()&&this.detectSessionInUrl&&r!=="none"){const{data:c,error:h}=await this._getSessionFromURL(l,r);if(h){if(this._debug("#_initialize()","error detecting session from URL",h),vy(h)){const v=(a=h.details)===null||a===void 0?void 0:a.code;if(v==="identity_already_exists"||v==="identity_not_found"||v==="single_identity_not_deletable")return{error:h}}return{error:h}}const{session:f,redirectType:m}=c;return this._debug("#_initialize()","detected session in URL",f,"redirect type",m),await this._saveSession(f),setTimeout(async()=>{m==="recovery"?await this._notifyAllSubscribers("PASSWORD_RECOVERY",f):await this._notifyAllSubscribers("SIGNED_IN",f)},0),{error:null}}return await this._recoverAndRefresh(),{error:null}}catch(l){return W(l)?this._returnResult({error:l}):this._returnResult({error:new ma("Unexpected error during initialization",l)})}finally{await this._handleVisibilityChange(),this._debug("#_initialize()","end")}}async signInAnonymously(a){var l,r,c;try{const h=await ie(this.fetch,"POST",`${this.url}/signup`,{headers:this.headers,body:{data:(r=(l=a==null?void 0:a.options)===null||l===void 0?void 0:l.data)!==null&&r!==void 0?r:{},gotrue_meta_security:{captcha_token:(c=a==null?void 0:a.options)===null||c===void 0?void 0:c.captchaToken}},xform:Gt}),{data:f,error:m}=h;if(m||!f)return this._returnResult({data:{user:null,session:null},error:m});const v=f.session,g=f.user;return f.session&&(await this._saveSession(f.session),await this._notifyAllSubscribers("SIGNED_IN",v)),this._returnResult({data:{user:g,session:v},error:null})}catch(h){if(W(h))return this._returnResult({data:{user:null,session:null},error:h});throw h}}async signUp(a){var l,r,c;try{let h;if("email"in a){const{email:y,password:_,options:T}=a;let x=null,j=null;this.flowType==="pkce"&&([x,j]=await ai(this.storage,this.storageKey)),h=await ie(this.fetch,"POST",`${this.url}/signup`,{headers:this.headers,redirectTo:T==null?void 0:T.emailRedirectTo,body:{email:y,password:_,data:(l=T==null?void 0:T.data)!==null&&l!==void 0?l:{},gotrue_meta_security:{captcha_token:T==null?void 0:T.captchaToken},code_challenge:x,code_challenge_method:j},xform:Gt})}else if("phone"in a){const{phone:y,password:_,options:T}=a;h=await ie(this.fetch,"POST",`${this.url}/signup`,{headers:this.headers,body:{phone:y,password:_,data:(r=T==null?void 0:T.data)!==null&&r!==void 0?r:{},channel:(c=T==null?void 0:T.channel)!==null&&c!==void 0?c:"sms",gotrue_meta_security:{captcha_token:T==null?void 0:T.captchaToken}},xform:Gt})}else throw new Kl("You must provide either an email or phone number and a password");const{data:f,error:m}=h;if(m||!f)return await it(this.storage,`${this.storageKey}-code-verifier`),this._returnResult({data:{user:null,session:null},error:m});const v=f.session,g=f.user;return f.session&&(await this._saveSession(f.session),await this._notifyAllSubscribers("SIGNED_IN",v)),this._returnResult({data:{user:g,session:v},error:null})}catch(h){if(await it(this.storage,`${this.storageKey}-code-verifier`),W(h))return this._returnResult({data:{user:null,session:null},error:h});throw h}}async signInWithPassword(a){try{let l;if("email"in a){const{email:h,password:f,options:m}=a;l=await ie(this.fetch,"POST",`${this.url}/token?grant_type=password`,{headers:this.headers,body:{email:h,password:f,gotrue_meta_security:{captcha_token:m==null?void 0:m.captchaToken}},xform:Om})}else if("phone"in a){const{phone:h,password:f,options:m}=a;l=await ie(this.fetch,"POST",`${this.url}/token?grant_type=password`,{headers:this.headers,body:{phone:h,password:f,gotrue_meta_security:{captcha_token:m==null?void 0:m.captchaToken}},xform:Om})}else throw new Kl("You must provide either an email or phone number and a password");const{data:r,error:c}=l;if(c)return this._returnResult({data:{user:null,session:null},error:c});if(!r||!r.session||!r.user){const h=new ni;return this._returnResult({data:{user:null,session:null},error:h})}return r.session&&(await this._saveSession(r.session),await this._notifyAllSubscribers("SIGNED_IN",r.session)),this._returnResult({data:Object.assign({user:r.user,session:r.session},r.weak_password?{weakPassword:r.weak_password}:null),error:c})}catch(l){if(W(l))return this._returnResult({data:{user:null,session:null},error:l});throw l}}async signInWithOAuth(a){var l,r,c,h;return await this._handleProviderSignIn(a.provider,{redirectTo:(l=a.options)===null||l===void 0?void 0:l.redirectTo,scopes:(r=a.options)===null||r===void 0?void 0:r.scopes,queryParams:(c=a.options)===null||c===void 0?void 0:c.queryParams,skipBrowserRedirect:(h=a.options)===null||h===void 0?void 0:h.skipBrowserRedirect})}async exchangeCodeForSession(a){return await this.initializePromise,this._acquireLock(this.lockAcquireTimeout,async()=>this._exchangeCodeForSession(a))}async signInWithWeb3(a){const{chain:l}=a;switch(l){case"ethereum":return await this.signInWithEthereum(a);case"solana":return await this.signInWithSolana(a);default:throw new Error(`@supabase/auth-js: Unsupported chain "${l}"`)}}async signInWithEthereum(a){var l,r,c,h,f,m,v,g,y,_,T;let x,j;if("message"in a)x=a.message,j=a.signature;else{const{chain:L,wallet:q,statement:X,options:Q}=a;let H;if(st())if(typeof q=="object")H=q;else{const G=window;if("ethereum"in G&&typeof G.ethereum=="object"&&"request"in G.ethereum&&typeof G.ethereum.request=="function")H=G.ethereum;else throw new Error("@supabase/auth-js: No compatible Ethereum wallet interface on the window object (window.ethereum) detected. Make sure the user already has a wallet installed and connected for this app. Prefer passing the wallet interface object directly to signInWithWeb3({ chain: 'ethereum', wallet: resolvedUserWallet }) instead.")}else{if(typeof q!="object"||!(Q!=null&&Q.url))throw new Error("@supabase/auth-js: Both wallet and url must be specified in non-browser environments.");H=q}const ee=new URL((l=Q==null?void 0:Q.url)!==null&&l!==void 0?l:window.location.href),Y=await H.request({method:"eth_requestAccounts"}).then(G=>G).catch(()=>{throw new Error("@supabase/auth-js: Wallet method eth_requestAccounts is missing or invalid")});if(!Y||Y.length===0)throw new Error("@supabase/auth-js: No accounts available. Please ensure the wallet is connected.");const F=tg(Y[0]);let B=(r=Q==null?void 0:Q.signInWithEthereum)===null||r===void 0?void 0:r.chainId;if(!B){const G=await H.request({method:"eth_chainId"});B=Qy(G)}const ve={domain:ee.host,address:F,statement:X,uri:ee.href,version:"1",chainId:B,nonce:(c=Q==null?void 0:Q.signInWithEthereum)===null||c===void 0?void 0:c.nonce,issuedAt:(f=(h=Q==null?void 0:Q.signInWithEthereum)===null||h===void 0?void 0:h.issuedAt)!==null&&f!==void 0?f:new Date,expirationTime:(m=Q==null?void 0:Q.signInWithEthereum)===null||m===void 0?void 0:m.expirationTime,notBefore:(v=Q==null?void 0:Q.signInWithEthereum)===null||v===void 0?void 0:v.notBefore,requestId:(g=Q==null?void 0:Q.signInWithEthereum)===null||g===void 0?void 0:g.requestId,resources:(y=Q==null?void 0:Q.signInWithEthereum)===null||y===void 0?void 0:y.resources};x=Zy(ve),j=await H.request({method:"personal_sign",params:[Iy(x),F]})}try{const{data:L,error:q}=await ie(this.fetch,"POST",`${this.url}/token?grant_type=web3`,{headers:this.headers,body:Object.assign({chain:"ethereum",message:x,signature:j},!((_=a.options)===null||_===void 0)&&_.captchaToken?{gotrue_meta_security:{captcha_token:(T=a.options)===null||T===void 0?void 0:T.captchaToken}}:null),xform:Gt});if(q)throw q;if(!L||!L.session||!L.user){const X=new ni;return this._returnResult({data:{user:null,session:null},error:X})}return L.session&&(await this._saveSession(L.session),await this._notifyAllSubscribers("SIGNED_IN",L.session)),this._returnResult({data:Object.assign({},L),error:q})}catch(L){if(W(L))return this._returnResult({data:{user:null,session:null},error:L});throw L}}async signInWithSolana(a){var l,r,c,h,f,m,v,g,y,_,T,x;let j,L;if("message"in a)j=a.message,L=a.signature;else{const{chain:q,wallet:X,statement:Q,options:H}=a;let ee;if(st())if(typeof X=="object")ee=X;else{const F=window;if("solana"in F&&typeof F.solana=="object"&&("signIn"in F.solana&&typeof F.solana.signIn=="function"||"signMessage"in F.solana&&typeof F.solana.signMessage=="function"))ee=F.solana;else throw new Error("@supabase/auth-js: No compatible Solana wallet interface on the window object (window.solana) detected. Make sure the user already has a wallet installed and connected for this app. Prefer passing the wallet interface object directly to signInWithWeb3({ chain: 'solana', wallet: resolvedUserWallet }) instead.")}else{if(typeof X!="object"||!(H!=null&&H.url))throw new Error("@supabase/auth-js: Both wallet and url must be specified in non-browser environments.");ee=X}const Y=new URL((l=H==null?void 0:H.url)!==null&&l!==void 0?l:window.location.href);if("signIn"in ee&&ee.signIn){const F=await ee.signIn(Object.assign(Object.assign(Object.assign({issuedAt:new Date().toISOString()},H==null?void 0:H.signInWithSolana),{version:"1",domain:Y.host,uri:Y.href}),Q?{statement:Q}:null));let B;if(Array.isArray(F)&&F[0]&&typeof F[0]=="object")B=F[0];else if(F&&typeof F=="object"&&"signedMessage"in F&&"signature"in F)B=F;else throw new Error("@supabase/auth-js: Wallet method signIn() returned unrecognized value");if("signedMessage"in B&&"signature"in B&&(typeof B.signedMessage=="string"||B.signedMessage instanceof Uint8Array)&&B.signature instanceof Uint8Array)j=typeof B.signedMessage=="string"?B.signedMessage:new TextDecoder().decode(B.signedMessage),L=B.signature;else throw new Error("@supabase/auth-js: Wallet method signIn() API returned object without signedMessage and signature fields")}else{if(!("signMessage"in ee)||typeof ee.signMessage!="function"||!("publicKey"in ee)||typeof ee!="object"||!ee.publicKey||!("toBase58"in ee.publicKey)||typeof ee.publicKey.toBase58!="function")throw new Error("@supabase/auth-js: Wallet does not have a compatible signMessage() and publicKey.toBase58() API");j=[`${Y.host} wants you to sign in with your Solana account:`,ee.publicKey.toBase58(),...Q?["",Q,""]:[""],"Version: 1",`URI: ${Y.href}`,`Issued At: ${(c=(r=H==null?void 0:H.signInWithSolana)===null||r===void 0?void 0:r.issuedAt)!==null&&c!==void 0?c:new Date().toISOString()}`,...!((h=H==null?void 0:H.signInWithSolana)===null||h===void 0)&&h.notBefore?[`Not Before: ${H.signInWithSolana.notBefore}`]:[],...!((f=H==null?void 0:H.signInWithSolana)===null||f===void 0)&&f.expirationTime?[`Expiration Time: ${H.signInWithSolana.expirationTime}`]:[],...!((m=H==null?void 0:H.signInWithSolana)===null||m===void 0)&&m.chainId?[`Chain ID: ${H.signInWithSolana.chainId}`]:[],...!((v=H==null?void 0:H.signInWithSolana)===null||v===void 0)&&v.nonce?[`Nonce: ${H.signInWithSolana.nonce}`]:[],...!((g=H==null?void 0:H.signInWithSolana)===null||g===void 0)&&g.requestId?[`Request ID: ${H.signInWithSolana.requestId}`]:[],...!((_=(y=H==null?void 0:H.signInWithSolana)===null||y===void 0?void 0:y.resources)===null||_===void 0)&&_.length?["Resources",...H.signInWithSolana.resources.map(B=>`- ${B}`)]:[]].join(`
 `);const F=await ee.signMessage(new TextEncoder().encode(j),"utf8");if(!F||!(F instanceof Uint8Array))throw new Error("@supabase/auth-js: Wallet signMessage() API returned an recognized value");L=F}}try{const{data:q,error:X}=await ie(this.fetch,"POST",`${this.url}/token?grant_type=web3`,{headers:this.headers,body:Object.assign({chain:"solana",message:j,signature:ga(L)},!((T=a.options)===null||T===void 0)&&T.captchaToken?{gotrue_meta_security:{captcha_token:(x=a.options)===null||x===void 0?void 0:x.captchaToken}}:null),xform:Gt});if(X)throw X;if(!q||!q.session||!q.user){const Q=new ni;return this._returnResult({data:{user:null,session:null},error:Q})}return q.session&&(await this._saveSession(q.session),await this._notifyAllSubscribers("SIGNED_IN",q.session)),this._returnResult({data:Object.assign({},q),error:X})}catch(q){if(W(q))return this._returnResult({data:{user:null,session:null},error:q});throw q}}async _exchangeCodeForSession(a){const l=await fa(this.storage,`${this.storageKey}-code-verifier`),[r,c]=(l??"").split("/");try{if(!r&&this.flowType==="pkce")throw new py;const{data:h,error:f}=await ie(this.fetch,"POST",`${this.url}/token?grant_type=pkce`,{headers:this.headers,body:{auth_code:a,code_verifier:r},xform:Gt});if(await it(this.storage,`${this.storageKey}-code-verifier`),f)throw f;if(!h||!h.session||!h.user){const m=new ni;return this._returnResult({data:{user:null,session:null,redirectType:null},error:m})}return h.session&&(await this._saveSession(h.session),await this._notifyAllSubscribers("SIGNED_IN",h.session)),this._returnResult({data:Object.assign(Object.assign({},h),{redirectType:c??null}),error:f})}catch(h){if(await it(this.storage,`${this.storageKey}-code-verifier`),W(h))return this._returnResult({data:{user:null,session:null,redirectType:null},error:h});throw h}}async signInWithIdToken(a){try{const{options:l,provider:r,token:c,access_token:h,nonce:f}=a,m=await ie(this.fetch,"POST",`${this.url}/token?grant_type=id_token`,{headers:this.headers,body:{provider:r,id_token:c,access_token:h,nonce:f,gotrue_meta_security:{captcha_token:l==null?void 0:l.captchaToken}},xform:Gt}),{data:v,error:g}=m;if(g)return this._returnResult({data:{user:null,session:null},error:g});if(!v||!v.session||!v.user){const y=new ni;return this._returnResult({data:{user:null,session:null},error:y})}return v.session&&(await this._saveSession(v.session),await this._notifyAllSubscribers("SIGNED_IN",v.session)),this._returnResult({data:v,error:g})}catch(l){if(W(l))return this._returnResult({data:{user:null,session:null},error:l});throw l}}async signInWithOtp(a){var l,r,c,h,f;try{if("email"in a){const{email:m,options:v}=a;let g=null,y=null;this.flowType==="pkce"&&([g,y]=await ai(this.storage,this.storageKey));const{error:_}=await ie(this.fetch,"POST",`${this.url}/otp`,{headers:this.headers,body:{email:m,data:(l=v==null?void 0:v.data)!==null&&l!==void 0?l:{},create_user:(r=v==null?void 0:v.shouldCreateUser)!==null&&r!==void 0?r:!0,gotrue_meta_security:{captcha_token:v==null?void 0:v.captchaToken},code_challenge:g,code_challenge_method:y},redirectTo:v==null?void 0:v.emailRedirectTo});return this._returnResult({data:{user:null,session:null},error:_})}if("phone"in a){const{phone:m,options:v}=a,{data:g,error:y}=await ie(this.fetch,"POST",`${this.url}/otp`,{headers:this.headers,body:{phone:m,data:(c=v==null?void 0:v.data)!==null&&c!==void 0?c:{},create_user:(h=v==null?void 0:v.shouldCreateUser)!==null&&h!==void 0?h:!0,gotrue_meta_security:{captcha_token:v==null?void 0:v.captchaToken},channel:(f=v==null?void 0:v.channel)!==null&&f!==void 0?f:"sms"}});return this._returnResult({data:{user:null,session:null,messageId:g==null?void 0:g.message_id},error:y})}throw new Kl("You must provide either an email or phone number.")}catch(m){if(await it(this.storage,`${this.storageKey}-code-verifier`),W(m))return this._returnResult({data:{user:null,session:null},error:m});throw m}}async verifyOtp(a){var l,r;try{let c,h;"options"in a&&(c=(l=a.options)===null||l===void 0?void 0:l.redirectTo,h=(r=a.options)===null||r===void 0?void 0:r.captchaToken);const{data:f,error:m}=await ie(this.fetch,"POST",`${this.url}/verify`,{headers:this.headers,body:Object.assign(Object.assign({},a),{gotrue_meta_security:{captcha_token:h}}),redirectTo:c,xform:Gt});if(m)throw m;if(!f)throw new Error("An error occurred on token verification.");const v=f.session,g=f.user;return v!=null&&v.access_token&&(await this._saveSession(v),await this._notifyAllSubscribers(a.type=="recovery"?"PASSWORD_RECOVERY":"SIGNED_IN",v)),this._returnResult({data:{user:g,session:v},error:null})}catch(c){if(W(c))return this._returnResult({data:{user:null,session:null},error:c});throw c}}async signInWithSSO(a){var l,r,c,h,f;try{let m=null,v=null;this.flowType==="pkce"&&([m,v]=await ai(this.storage,this.storageKey));const g=await ie(this.fetch,"POST",`${this.url}/sso`,{body:Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({},"providerId"in a?{provider_id:a.providerId}:null),"domain"in a?{domain:a.domain}:null),{redirect_to:(r=(l=a.options)===null||l===void 0?void 0:l.redirectTo)!==null&&r!==void 0?r:void 0}),!((c=a==null?void 0:a.options)===null||c===void 0)&&c.captchaToken?{gotrue_meta_security:{captcha_token:a.options.captchaToken}}:null),{skip_http_redirect:!0,code_challenge:m,code_challenge_method:v}),headers:this.headers,xform:Gy});return!((h=g.data)===null||h===void 0)&&h.url&&st()&&!(!((f=a.options)===null||f===void 0)&&f.skipBrowserRedirect)&&window.location.assign(g.data.url),this._returnResult(g)}catch(m){if(await it(this.storage,`${this.storageKey}-code-verifier`),W(m))return this._returnResult({data:null,error:m});throw m}}async reauthenticate(){return await this.initializePromise,await this._acquireLock(this.lockAcquireTimeout,async()=>await this._reauthenticate())}async _reauthenticate(){try{return await this._useSession(async a=>{const{data:{session:l},error:r}=a;if(r)throw r;if(!l)throw new Ot;const{error:c}=await ie(this.fetch,"GET",`${this.url}/reauthenticate`,{headers:this.headers,jwt:l.access_token});return this._returnResult({data:{user:null,session:null},error:c})})}catch(a){if(W(a))return this._returnResult({data:{user:null,session:null},error:a});throw a}}async resend(a){try{const l=`${this.url}/resend`;if("email"in a){const{email:r,type:c,options:h}=a,{error:f}=await ie(this.fetch,"POST",l,{headers:this.headers,body:{email:r,type:c,gotrue_meta_security:{captcha_token:h==null?void 0:h.captchaToken}},redirectTo:h==null?void 0:h.emailRedirectTo});return this._returnResult({data:{user:null,session:null},error:f})}else if("phone"in a){const{phone:r,type:c,options:h}=a,{data:f,error:m}=await ie(this.fetch,"POST",l,{headers:this.headers,body:{phone:r,type:c,gotrue_meta_security:{captcha_token:h==null?void 0:h.captchaToken}}});return this._returnResult({data:{user:null,session:null,messageId:f==null?void 0:f.message_id},error:m})}throw new Kl("You must provide either an email or phone number and a type")}catch(l){if(W(l))return this._returnResult({data:{user:null,session:null},error:l});throw l}}async getSession(){return await this.initializePromise,await this._acquireLock(this.lockAcquireTimeout,async()=>this._useSession(async l=>l))}async _acquireLock(a,l){this._debug("#_acquireLock","begin",a);try{if(this.lockAcquired){const r=this.pendingInLock.length?this.pendingInLock[this.pendingInLock.length-1]:Promise.resolve(),c=(async()=>(await r,await l()))();return this.pendingInLock.push((async()=>{try{await c}catch{}})()),c}return await this.lock(`lock:${this.storageKey}`,a,async()=>{this._debug("#_acquireLock","lock acquired for storage key",this.storageKey);try{this.lockAcquired=!0;const r=l();for(this.pendingInLock.push((async()=>{try{await r}catch{}})()),await r;this.pendingInLock.length;){const c=[...this.pendingInLock];await Promise.all(c),this.pendingInLock.splice(0,c.length)}return await r}finally{this._debug("#_acquireLock","lock released for storage key",this.storageKey),this.lockAcquired=!1}})}finally{this._debug("#_acquireLock","end")}}async _useSession(a){this._debug("#_useSession","begin");try{const l=await this.__loadSession();return await a(l)}finally{this._debug("#_useSession","end")}}async __loadSession(){this._debug("#__loadSession()","begin"),this.lockAcquired||this._debug("#__loadSession()","used outside of an acquired lock!",new Error().stack);try{let a=null;const l=await fa(this.storage,this.storageKey);if(this._debug("#getSession()","session from storage",l),l!==null&&(this._isValidSession(l)?a=l:(this._debug("#getSession()","session from storage is not valid"),await this._removeSession())),!a)return{data:{session:null},error:null};const r=a.expires_at?a.expires_at*1e3-Date.now()<Oo:!1;if(this._debug("#__loadSession()",`session has${r?"":" not"} expired`,"expires_at",a.expires_at),!r){if(this.userStorage){const f=await fa(this.userStorage,this.storageKey+"-user");f!=null&&f.user?a.user=f.user:a.user=jo()}if(this.storage.isServer&&a.user&&!a.user.__isUserNotAvailableProxy){const f={value:this.suppressGetSessionWarning};a.user=By(a.user,f),f.value&&(this.suppressGetSessionWarning=!0)}return{data:{session:a},error:null}}const{data:c,error:h}=await this._callRefreshToken(a.refresh_token);return h?this._returnResult({data:{session:null},error:h}):this._returnResult({data:{session:c},error:null})}finally{this._debug("#__loadSession()","end")}}async getUser(a){if(a)return await this._getUser(a);await this.initializePromise;const l=await this._acquireLock(this.lockAcquireTimeout,async()=>await this._getUser());return l.data.user&&(this.suppressGetSessionWarning=!0),l}async _getUser(a){try{return a?await ie(this.fetch,"GET",`${this.url}/user`,{headers:this.headers,jwt:a,xform:Yn}):await this._useSession(async l=>{var r,c,h;const{data:f,error:m}=l;if(m)throw m;return!(!((r=f.session)===null||r===void 0)&&r.access_token)&&!this.hasCustomAuthorizationHeader?{data:{user:null},error:new Ot}:await ie(this.fetch,"GET",`${this.url}/user`,{headers:this.headers,jwt:(h=(c=f.session)===null||c===void 0?void 0:c.access_token)!==null&&h!==void 0?h:void 0,xform:Yn})})}catch(l){if(W(l))return Ro(l)&&(await this._removeSession(),await it(this.storage,`${this.storageKey}-code-verifier`)),this._returnResult({data:{user:null},error:l});throw l}}async updateUser(a,l={}){return await this.initializePromise,await this._acquireLock(this.lockAcquireTimeout,async()=>await this._updateUser(a,l))}async _updateUser(a,l={}){try{return await this._useSession(async r=>{const{data:c,error:h}=r;if(h)throw h;if(!c.session)throw new Ot;const f=c.session;let m=null,v=null;this.flowType==="pkce"&&a.email!=null&&([m,v]=await ai(this.storage,this.storageKey));const{data:g,error:y}=await ie(this.fetch,"PUT",`${this.url}/user`,{headers:this.headers,redirectTo:l==null?void 0:l.emailRedirectTo,body:Object.assign(Object.assign({},a),{code_challenge:m,code_challenge_method:v}),jwt:f.access_token,xform:Yn});if(y)throw y;return f.user=g.user,await this._saveSession(f),await this._notifyAllSubscribers("USER_UPDATED",f),this._returnResult({data:{user:f.user},error:null})})}catch(r){if(await it(this.storage,`${this.storageKey}-code-verifier`),W(r))return this._returnResult({data:{user:null},error:r});throw r}}async setSession(a){return await this.initializePromise,await this._acquireLock(this.lockAcquireTimeout,async()=>await this._setSession(a))}async _setSession(a){try{if(!a.access_token||!a.refresh_token)throw new Ot;const l=Date.now()/1e3;let r=l,c=!0,h=null;const{payload:f}=Xl(a.access_token);if(f.exp&&(r=f.exp,c=r<=l),c){const{data:m,error:v}=await this._callRefreshToken(a.refresh_token);if(v)return this._returnResult({data:{user:null,session:null},error:v});if(!m)return{data:{user:null,session:null},error:null};h=m}else{const{data:m,error:v}=await this._getUser(a.access_token);if(v)return this._returnResult({data:{user:null,session:null},error:v});h={access_token:a.access_token,refresh_token:a.refresh_token,user:m.user,token_type:"bearer",expires_in:r-l,expires_at:r},await this._saveSession(h),await this._notifyAllSubscribers("SIGNED_IN",h)}return this._returnResult({data:{user:h.user,session:h},error:null})}catch(l){if(W(l))return this._returnResult({data:{session:null,user:null},error:l});throw l}}async refreshSession(a){return await this.initializePromise,await this._acquireLock(this.lockAcquireTimeout,async()=>await this._refreshSession(a))}async _refreshSession(a){try{return await this._useSession(async l=>{var r;if(!a){const{data:f,error:m}=l;if(m)throw m;a=(r=f.session)!==null&&r!==void 0?r:void 0}if(!(a!=null&&a.refresh_token))throw new Ot;const{data:c,error:h}=await this._callRefreshToken(a.refresh_token);return h?this._returnResult({data:{user:null,session:null},error:h}):c?this._returnResult({data:{user:c.user,session:c},error:null}):this._returnResult({data:{user:null,session:null},error:null})})}catch(l){if(W(l))return this._returnResult({data:{user:null,session:null},error:l});throw l}}async _getSessionFromURL(a,l){try{if(!st())throw new Yl("No browser detected.");if(a.error||a.error_description||a.error_code)throw new Yl(a.error_description||"Error in URL with unspecified error_description",{error:a.error||"unspecified_error",code:a.error_code||"unspecified_code"});switch(l){case"implicit":if(this.flowType==="pkce")throw new _m("Not a valid PKCE flow url.");break;case"pkce":if(this.flowType==="implicit")throw new Yl("Not a valid implicit grant flow url.");break;default:}if(l==="pkce"){if(this._debug("#_initialize()","begin","is PKCE flow",!0),!a.code)throw new _m("No code detected.");const{data:Q,error:H}=await this._exchangeCodeForSession(a.code);if(H)throw H;const ee=new URL(window.location.href);return ee.searchParams.delete("code"),window.history.replaceState(window.history.state,"",ee.toString()),{data:{session:Q.session,redirectType:null},error:null}}const{provider_token:r,provider_refresh_token:c,access_token:h,refresh_token:f,expires_in:m,expires_at:v,token_type:g}=a;if(!h||!m||!f||!g)throw new Yl("No session defined in URL");const y=Math.round(Date.now()/1e3),_=parseInt(m);let T=y+_;v&&(T=parseInt(v));const x=T-y;x*1e3<=ui&&console.warn(`@supabase/gotrue-js: Session as retrieved from URL expires in ${x}s, should have been closer to ${_}s`);const j=T-_;y-j>=120?console.warn("@supabase/gotrue-js: Session as retrieved from URL was issued over 120s ago, URL could be stale",j,T,y):y-j<0&&console.warn("@supabase/gotrue-js: Session as retrieved from URL was issued in the future? Check the device clock for skew",j,T,y);const{data:L,error:q}=await this._getUser(h);if(q)throw q;const X={provider_token:r,provider_refresh_token:c,access_token:h,expires_in:_,expires_at:T,refresh_token:f,token_type:g,user:L.user};return window.location.hash="",this._debug("#_getSessionFromURL()","clearing window.location.hash"),this._returnResult({data:{session:X,redirectType:a.type},error:null})}catch(r){if(W(r))return this._returnResult({data:{session:null,redirectType:null},error:r});throw r}}_isImplicitGrantCallback(a){return typeof this.detectSessionInUrl=="function"?this.detectSessionInUrl(new URL(window.location.href),a):!!(a.access_token||a.error_description)}async _isPKCECallback(a){const l=await fa(this.storage,`${this.storageKey}-code-verifier`);return!!(a.code&&l)}async signOut(a={scope:"global"}){return await this.initializePromise,await this._acquireLock(this.lockAcquireTimeout,async()=>await this._signOut(a))}async _signOut({scope:a}={scope:"global"}){return await this._useSession(async l=>{var r;const{data:c,error:h}=l;if(h&&!Ro(h))return this._returnResult({error:h});const f=(r=c.session)===null||r===void 0?void 0:r.access_token;if(f){const{error:m}=await this.admin.signOut(f,a);if(m&&!(gy(m)&&(m.status===404||m.status===401||m.status===403)||Ro(m)))return this._returnResult({error:m})}return a!=="others"&&(await this._removeSession(),await it(this.storage,`${this.storageKey}-code-verifier`)),this._returnResult({error:null})})}onAuthStateChange(a){const l=Ty(),r={id:l,callback:a,unsubscribe:()=>{this._debug("#unsubscribe()","state change callback with id removed",l),this.stateChangeEmitters.delete(l)}};return this._debug("#onAuthStateChange()","registered callback with id",l),this.stateChangeEmitters.set(l,r),(async()=>(await this.initializePromise,await this._acquireLock(this.lockAcquireTimeout,async()=>{this._emitInitialSession(l)})))(),{data:{subscription:r}}}async _emitInitialSession(a){return await this._useSession(async l=>{var r,c;try{const{data:{session:h},error:f}=l;if(f)throw f;await((r=this.stateChangeEmitters.get(a))===null||r===void 0?void 0:r.callback("INITIAL_SESSION",h)),this._debug("INITIAL_SESSION","callback id",a,"session",h)}catch(h){await((c=this.stateChangeEmitters.get(a))===null||c===void 0?void 0:c.callback("INITIAL_SESSION",null)),this._debug("INITIAL_SESSION","callback id",a,"error",h),console.error(h)}})}async resetPasswordForEmail(a,l={}){let r=null,c=null;this.flowType==="pkce"&&([r,c]=await ai(this.storage,this.storageKey,!0));try{return await ie(this.fetch,"POST",`${this.url}/recover`,{body:{email:a,code_challenge:r,code_challenge_method:c,gotrue_meta_security:{captcha_token:l.captchaToken}},headers:this.headers,redirectTo:l.redirectTo})}catch(h){if(await it(this.storage,`${this.storageKey}-code-verifier`),W(h))return this._returnResult({data:null,error:h});throw h}}async getUserIdentities(){var a;try{const{data:l,error:r}=await this.getUser();if(r)throw r;return this._returnResult({data:{identities:(a=l.user.identities)!==null&&a!==void 0?a:[]},error:null})}catch(l){if(W(l))return this._returnResult({data:null,error:l});throw l}}async linkIdentity(a){return"token"in a?this.linkIdentityIdToken(a):this.linkIdentityOAuth(a)}async linkIdentityOAuth(a){var l;try{const{data:r,error:c}=await this._useSession(async h=>{var f,m,v,g,y;const{data:_,error:T}=h;if(T)throw T;const x=await this._getUrlForProvider(`${this.url}/user/identities/authorize`,a.provider,{redirectTo:(f=a.options)===null||f===void 0?void 0:f.redirectTo,scopes:(m=a.options)===null||m===void 0?void 0:m.scopes,queryParams:(v=a.options)===null||v===void 0?void 0:v.queryParams,skipBrowserRedirect:!0});return await ie(this.fetch,"GET",x,{headers:this.headers,jwt:(y=(g=_.session)===null||g===void 0?void 0:g.access_token)!==null&&y!==void 0?y:void 0})});if(c)throw c;return st()&&!(!((l=a.options)===null||l===void 0)&&l.skipBrowserRedirect)&&window.location.assign(r==null?void 0:r.url),this._returnResult({data:{provider:a.provider,url:r==null?void 0:r.url},error:null})}catch(r){if(W(r))return this._returnResult({data:{provider:a.provider,url:null},error:r});throw r}}async linkIdentityIdToken(a){return await this._useSession(async l=>{var r;try{const{error:c,data:{session:h}}=l;if(c)throw c;const{options:f,provider:m,token:v,access_token:g,nonce:y}=a,_=await ie(this.fetch,"POST",`${this.url}/token?grant_type=id_token`,{headers:this.headers,jwt:(r=h==null?void 0:h.access_token)!==null&&r!==void 0?r:void 0,body:{provider:m,id_token:v,access_token:g,nonce:y,link_identity:!0,gotrue_meta_security:{captcha_token:f==null?void 0:f.captchaToken}},xform:Gt}),{data:T,error:x}=_;return x?this._returnResult({data:{user:null,session:null},error:x}):!T||!T.session||!T.user?this._returnResult({data:{user:null,session:null},error:new ni}):(T.session&&(await this._saveSession(T.session),await this._notifyAllSubscribers("USER_UPDATED",T.session)),this._returnResult({data:T,error:x}))}catch(c){if(await it(this.storage,`${this.storageKey}-code-verifier`),W(c))return this._returnResult({data:{user:null,session:null},error:c});throw c}})}async unlinkIdentity(a){try{return await this._useSession(async l=>{var r,c;const{data:h,error:f}=l;if(f)throw f;return await ie(this.fetch,"DELETE",`${this.url}/user/identities/${a.identity_id}`,{headers:this.headers,jwt:(c=(r=h.session)===null||r===void 0?void 0:r.access_token)!==null&&c!==void 0?c:void 0})})}catch(l){if(W(l))return this._returnResult({data:null,error:l});throw l}}async _refreshAccessToken(a){const l=`#_refreshAccessToken(${a.substring(0,5)}...)`;this._debug(l,"begin");try{const r=Date.now();return await Ry(async c=>(c>0&&await Oy(200*Math.pow(2,c-1)),this._debug(l,"refreshing attempt",c),await ie(this.fetch,"POST",`${this.url}/token?grant_type=refresh_token`,{body:{refresh_token:a},headers:this.headers,xform:Gt})),(c,h)=>{const f=200*Math.pow(2,c);return h&&Co(h)&&Date.now()+f-r<ui})}catch(r){if(this._debug(l,"error",r),W(r))return this._returnResult({data:{session:null,user:null},error:r});throw r}finally{this._debug(l,"end")}}_isValidSession(a){return typeof a=="object"&&a!==null&&"access_token"in a&&"refresh_token"in a&&"expires_at"in a}async _handleProviderSignIn(a,l){const r=await this._getUrlForProvider(`${this.url}/authorize`,a,{redirectTo:l.redirectTo,scopes:l.scopes,queryParams:l.queryParams});return this._debug("#_handleProviderSignIn()","provider",a,"options",l,"url",r),st()&&!l.skipBrowserRedirect&&window.location.assign(r),{data:{provider:a,url:r},error:null}}async _recoverAndRefresh(){var a,l;const r="#_recoverAndRefresh()";this._debug(r,"begin");try{const c=await fa(this.storage,this.storageKey);if(c&&this.userStorage){let f=await fa(this.userStorage,this.storageKey+"-user");!this.storage.isServer&&Object.is(this.storage,this.userStorage)&&!f&&(f={user:c.user},await oi(this.userStorage,this.storageKey+"-user",f)),c.user=(a=f==null?void 0:f.user)!==null&&a!==void 0?a:jo()}else if(c&&!c.user&&!c.user){const f=await fa(this.storage,this.storageKey+"-user");f&&(f!=null&&f.user)?(c.user=f.user,await it(this.storage,this.storageKey+"-user"),await oi(this.storage,this.storageKey,c)):c.user=jo()}if(this._debug(r,"session from storage",c),!this._isValidSession(c)){this._debug(r,"session is not valid"),c!==null&&await this._removeSession();return}const h=((l=c.expires_at)!==null&&l!==void 0?l:1/0)*1e3-Date.now()<Oo;if(this._debug(r,`session has${h?"":" not"} expired with margin of ${Oo}s`),h){if(this.autoRefreshToken&&c.refresh_token){const{error:f}=await this._callRefreshToken(c.refresh_token);f&&(console.error(f),Co(f)||(this._debug(r,"refresh failed with a non-retryable error, removing the session",f),await this._removeSession()))}}else if(c.user&&c.user.__isUserNotAvailableProxy===!0)try{const{data:f,error:m}=await this._getUser(c.access_token);!m&&(f!=null&&f.user)?(c.user=f.user,await this._saveSession(c),await this._notifyAllSubscribers("SIGNED_IN",c)):this._debug(r,"could not get user data, skipping SIGNED_IN notification")}catch(f){console.error("Error getting user data:",f),this._debug(r,"error getting user data, skipping SIGNED_IN notification",f)}else await this._notifyAllSubscribers("SIGNED_IN",c)}catch(c){this._debug(r,"error",c),console.error(c);return}finally{this._debug(r,"end")}}async _callRefreshToken(a){var l,r;if(!a)throw new Ot;if(this.refreshingDeferred)return this.refreshingDeferred.promise;const c=`#_callRefreshToken(${a.substring(0,5)}...)`;this._debug(c,"begin");try{this.refreshingDeferred=new tr;const{data:h,error:f}=await this._refreshAccessToken(a);if(f)throw f;if(!h.session)throw new Ot;await this._saveSession(h.session),await this._notifyAllSubscribers("TOKEN_REFRESHED",h.session);const m={data:h.session,error:null};return this.refreshingDeferred.resolve(m),m}catch(h){if(this._debug(c,"error",h),W(h)){const f={data:null,error:h};return Co(h)||await this._removeSession(),(l=this.refreshingDeferred)===null||l===void 0||l.resolve(f),f}throw(r=this.refreshingDeferred)===null||r===void 0||r.reject(h),h}finally{this.refreshingDeferred=null,this._debug(c,"end")}}async _notifyAllSubscribers(a,l,r=!0){const c=`#_notifyAllSubscribers(${a})`;this._debug(c,"begin",l,`broadcast = ${r}`);try{this.broadcastChannel&&r&&this.broadcastChannel.postMessage({event:a,session:l});const h=[],f=Array.from(this.stateChangeEmitters.values()).map(async m=>{try{await m.callback(a,l)}catch(v){h.push(v)}});if(await Promise.all(f),h.length>0){for(let m=0;m<h.length;m+=1)console.error(h[m]);throw h[0]}}finally{this._debug(c,"end")}}async _saveSession(a){this._debug("#_saveSession()",a),this.suppressGetSessionWarning=!0,await it(this.storage,`${this.storageKey}-code-verifier`);const l=Object.assign({},a),r=l.user&&l.user.__isUserNotAvailableProxy===!0;if(this.userStorage){!r&&l.user&&await oi(this.userStorage,this.storageKey+"-user",{user:l.user});const c=Object.assign({},l);delete c.user;const h=Am(c);await oi(this.storage,this.storageKey,h)}else{const c=Am(l);await oi(this.storage,this.storageKey,c)}}async _removeSession(){this._debug("#_removeSession()"),this.suppressGetSessionWarning=!1,await it(this.storage,this.storageKey),await it(this.storage,this.storageKey+"-code-verifier"),await it(this.storage,this.storageKey+"-user"),this.userStorage&&await it(this.userStorage,this.storageKey+"-user"),await this._notifyAllSubscribers("SIGNED_OUT",null)}_removeVisibilityChangedCallback(){this._debug("#_removeVisibilityChangedCallback()");const a=this.visibilityChangedCallback;this.visibilityChangedCallback=null;try{a&&st()&&(window!=null&&window.removeEventListener)&&window.removeEventListener("visibilitychange",a)}catch(l){console.error("removing visibilitychange callback failed",l)}}async _startAutoRefresh(){await this._stopAutoRefresh(),this._debug("#_startAutoRefresh()");const a=setInterval(()=>this._autoRefreshTokenTick(),ui);this.autoRefreshTicker=a,a&&typeof a=="object"&&typeof a.unref=="function"?a.unref():typeof Deno<"u"&&typeof Deno.unrefTimer=="function"&&Deno.unrefTimer(a);const l=setTimeout(async()=>{await this.initializePromise,await this._autoRefreshTokenTick()},0);this.autoRefreshTickTimeout=l,l&&typeof l=="object"&&typeof l.unref=="function"?l.unref():typeof Deno<"u"&&typeof Deno.unrefTimer=="function"&&Deno.unrefTimer(l)}async _stopAutoRefresh(){this._debug("#_stopAutoRefresh()");const a=this.autoRefreshTicker;this.autoRefreshTicker=null,a&&clearInterval(a);const l=this.autoRefreshTickTimeout;this.autoRefreshTickTimeout=null,l&&clearTimeout(l)}async startAutoRefresh(){this._removeVisibilityChangedCallback(),await this._startAutoRefresh()}async stopAutoRefresh(){this._removeVisibilityChangedCallback(),await this._stopAutoRefresh()}async _autoRefreshTokenTick(){this._debug("#_autoRefreshTokenTick()","begin");try{await this._acquireLock(0,async()=>{try{const a=Date.now();try{return await this._useSession(async l=>{const{data:{session:r}}=l;if(!r||!r.refresh_token||!r.expires_at){this._debug("#_autoRefreshTokenTick()","no session");return}const c=Math.floor((r.expires_at*1e3-a)/ui);this._debug("#_autoRefreshTokenTick()",`access token expires in ${c} ticks, a tick lasts ${ui}ms, refresh threshold is ${$o} ticks`),c<=$o&&await this._callRefreshToken(r.refresh_token)})}catch(l){console.error("Auto refresh tick failed with error. This is likely a transient error.",l)}}finally{this._debug("#_autoRefreshTokenTick()","end")}})}catch(a){if(a.isAcquireTimeout||a instanceof eg)this._debug("auto refresh token tick lock not available");else throw a}}async _handleVisibilityChange(){if(this._debug("#_handleVisibilityChange()"),!st()||!(window!=null&&window.addEventListener))return this.autoRefreshToken&&this.startAutoRefresh(),!1;try{this.visibilityChangedCallback=async()=>{try{await this._onVisibilityChanged(!1)}catch(a){this._debug("#visibilityChangedCallback","error",a)}},window==null||window.addEventListener("visibilitychange",this.visibilityChangedCallback),await this._onVisibilityChanged(!0)}catch(a){console.error("_handleVisibilityChange",a)}}async _onVisibilityChanged(a){const l=`#_onVisibilityChanged(${a})`;this._debug(l,"visibilityState",document.visibilityState),document.visibilityState==="visible"?(this.autoRefreshToken&&this._startAutoRefresh(),a||(await this.initializePromise,await this._acquireLock(this.lockAcquireTimeout,async()=>{if(document.visibilityState!=="visible"){this._debug(l,"acquired the lock to recover the session, but the browser visibilityState is no longer visible, aborting");return}await this._recoverAndRefresh()}))):document.visibilityState==="hidden"&&this.autoRefreshToken&&this._stopAutoRefresh()}async _getUrlForProvider(a,l,r){const c=[`provider=${encodeURIComponent(l)}`];if(r!=null&&r.redirectTo&&c.push(`redirect_to=${encodeURIComponent(r.redirectTo)}`),r!=null&&r.scopes&&c.push(`scopes=${encodeURIComponent(r.scopes)}`),this.flowType==="pkce"){const[h,f]=await ai(this.storage,this.storageKey),m=new URLSearchParams({code_challenge:`${encodeURIComponent(h)}`,code_challenge_method:`${encodeURIComponent(f)}`});c.push(m.toString())}if(r!=null&&r.queryParams){const h=new URLSearchParams(r.queryParams);c.push(h.toString())}return r!=null&&r.skipBrowserRedirect&&c.push(`skip_http_redirect=${r.skipBrowserRedirect}`),`${a}?${c.join("&")}`}async _unenroll(a){try{return await this._useSession(async l=>{var r;const{data:c,error:h}=l;return h?this._returnResult({data:null,error:h}):await ie(this.fetch,"DELETE",`${this.url}/factors/${a.factorId}`,{headers:this.headers,jwt:(r=c==null?void 0:c.session)===null||r===void 0?void 0:r.access_token})})}catch(l){if(W(l))return this._returnResult({data:null,error:l});throw l}}async _enroll(a){try{return await this._useSession(async l=>{var r,c;const{data:h,error:f}=l;if(f)return this._returnResult({data:null,error:f});const m=Object.assign({friendly_name:a.friendlyName,factor_type:a.factorType},a.factorType==="phone"?{phone:a.phone}:a.factorType==="totp"?{issuer:a.issuer}:{}),{data:v,error:g}=await ie(this.fetch,"POST",`${this.url}/factors`,{body:m,headers:this.headers,jwt:(r=h==null?void 0:h.session)===null||r===void 0?void 0:r.access_token});return g?this._returnResult({data:null,error:g}):(a.factorType==="totp"&&v.type==="totp"&&(!((c=v==null?void 0:v.totp)===null||c===void 0)&&c.qr_code)&&(v.totp.qr_code=`data:image/svg+xml;utf-8,${v.totp.qr_code}`),this._returnResult({data:v,error:null}))})}catch(l){if(W(l))return this._returnResult({data:null,error:l});throw l}}async _verify(a){return this._acquireLock(this.lockAcquireTimeout,async()=>{try{return await this._useSession(async l=>{var r;const{data:c,error:h}=l;if(h)return this._returnResult({data:null,error:h});const f=Object.assign({challenge_id:a.challengeId},"webauthn"in a?{webauthn:Object.assign(Object.assign({},a.webauthn),{credential_response:a.webauthn.type==="create"?ab(a.webauthn.credential_response):ib(a.webauthn.credential_response)})}:{code:a.code}),{data:m,error:v}=await ie(this.fetch,"POST",`${this.url}/factors/${a.factorId}/verify`,{body:f,headers:this.headers,jwt:(r=c==null?void 0:c.session)===null||r===void 0?void 0:r.access_token});return v?this._returnResult({data:null,error:v}):(await this._saveSession(Object.assign({expires_at:Math.round(Date.now()/1e3)+m.expires_in},m)),await this._notifyAllSubscribers("MFA_CHALLENGE_VERIFIED",m),this._returnResult({data:m,error:v}))})}catch(l){if(W(l))return this._returnResult({data:null,error:l});throw l}})}async _challenge(a){return this._acquireLock(this.lockAcquireTimeout,async()=>{try{return await this._useSession(async l=>{var r;const{data:c,error:h}=l;if(h)return this._returnResult({data:null,error:h});const f=await ie(this.fetch,"POST",`${this.url}/factors/${a.factorId}/challenge`,{body:a,headers:this.headers,jwt:(r=c==null?void 0:c.session)===null||r===void 0?void 0:r.access_token});if(f.error)return f;const{data:m}=f;if(m.type!=="webauthn")return{data:m,error:null};switch(m.webauthn.type){case"create":return{data:Object.assign(Object.assign({},m),{webauthn:Object.assign(Object.assign({},m.webauthn),{credential_options:Object.assign(Object.assign({},m.webauthn.credential_options),{publicKey:tb(m.webauthn.credential_options.publicKey)})})}),error:null};case"request":return{data:Object.assign(Object.assign({},m),{webauthn:Object.assign(Object.assign({},m.webauthn),{credential_options:Object.assign(Object.assign({},m.webauthn.credential_options),{publicKey:nb(m.webauthn.credential_options.publicKey)})})}),error:null}}})}catch(l){if(W(l))return this._returnResult({data:null,error:l});throw l}})}async _challengeAndVerify(a){const{data:l,error:r}=await this._challenge({factorId:a.factorId});return r?this._returnResult({data:null,error:r}):await this._verify({factorId:a.factorId,challengeId:l.id,code:a.code})}async _listFactors(){var a;const{data:{user:l},error:r}=await this.getUser();if(r)return{data:null,error:r};const c={all:[],phone:[],totp:[],webauthn:[]};for(const h of(a=l==null?void 0:l.factors)!==null&&a!==void 0?a:[])c.all.push(h),h.status==="verified"&&c[h.factor_type].push(h);return{data:c,error:null}}async _getAuthenticatorAssuranceLevel(a){var l,r,c,h;if(a)try{const{payload:x}=Xl(a);let j=null;x.aal&&(j=x.aal);let L=j;const{data:{user:q},error:X}=await this.getUser(a);if(X)return this._returnResult({data:null,error:X});((r=(l=q==null?void 0:q.factors)===null||l===void 0?void 0:l.filter(ee=>ee.status==="verified"))!==null&&r!==void 0?r:[]).length>0&&(L="aal2");const H=x.amr||[];return{data:{currentLevel:j,nextLevel:L,currentAuthenticationMethods:H},error:null}}catch(x){if(W(x))return this._returnResult({data:null,error:x});throw x}const{data:{session:f},error:m}=await this.getSession();if(m)return this._returnResult({data:null,error:m});if(!f)return{data:{currentLevel:null,nextLevel:null,currentAuthenticationMethods:[]},error:null};const{payload:v}=Xl(f.access_token);let g=null;v.aal&&(g=v.aal);let y=g;((h=(c=f.user.factors)===null||c===void 0?void 0:c.filter(x=>x.status==="verified"))!==null&&h!==void 0?h:[]).length>0&&(y="aal2");const T=v.amr||[];return{data:{currentLevel:g,nextLevel:y,currentAuthenticationMethods:T},error:null}}async _getAuthorizationDetails(a){try{return await this._useSession(async l=>{const{data:{session:r},error:c}=l;return c?this._returnResult({data:null,error:c}):r?await ie(this.fetch,"GET",`${this.url}/oauth/authorizations/${a}`,{headers:this.headers,jwt:r.access_token,xform:h=>({data:h,error:null})}):this._returnResult({data:null,error:new Ot})})}catch(l){if(W(l))return this._returnResult({data:null,error:l});throw l}}async _approveAuthorization(a,l){try{return await this._useSession(async r=>{const{data:{session:c},error:h}=r;if(h)return this._returnResult({data:null,error:h});if(!c)return this._returnResult({data:null,error:new Ot});const f=await ie(this.fetch,"POST",`${this.url}/oauth/authorizations/${a}/consent`,{headers:this.headers,jwt:c.access_token,body:{action:"approve"},xform:m=>({data:m,error:null})});return f.data&&f.data.redirect_url&&st()&&!(l!=null&&l.skipBrowserRedirect)&&window.location.assign(f.data.redirect_url),f})}catch(r){if(W(r))return this._returnResult({data:null,error:r});throw r}}async _denyAuthorization(a,l){try{return await this._useSession(async r=>{const{data:{session:c},error:h}=r;if(h)return this._returnResult({data:null,error:h});if(!c)return this._returnResult({data:null,error:new Ot});const f=await ie(this.fetch,"POST",`${this.url}/oauth/authorizations/${a}/consent`,{headers:this.headers,jwt:c.access_token,body:{action:"deny"},xform:m=>({data:m,error:null})});return f.data&&f.data.redirect_url&&st()&&!(l!=null&&l.skipBrowserRedirect)&&window.location.assign(f.data.redirect_url),f})}catch(r){if(W(r))return this._returnResult({data:null,error:r});throw r}}async _listOAuthGrants(){try{return await this._useSession(async a=>{const{data:{session:l},error:r}=a;return r?this._returnResult({data:null,error:r}):l?await ie(this.fetch,"GET",`${this.url}/user/oauth/grants`,{headers:this.headers,jwt:l.access_token,xform:c=>({data:c,error:null})}):this._returnResult({data:null,error:new Ot})})}catch(a){if(W(a))return this._returnResult({data:null,error:a});throw a}}async _revokeOAuthGrant(a){try{return await this._useSession(async l=>{const{data:{session:r},error:c}=l;return c?this._returnResult({data:null,error:c}):r?(await ie(this.fetch,"DELETE",`${this.url}/user/oauth/grants`,{headers:this.headers,jwt:r.access_token,query:{client_id:a.clientId},noResolveJson:!0}),{data:{},error:null}):this._returnResult({data:null,error:new Ot})})}catch(l){if(W(l))return this._returnResult({data:null,error:l});throw l}}async fetchJwk(a,l={keys:[]}){let r=l.keys.find(m=>m.kid===a);if(r)return r;const c=Date.now();if(r=this.jwks.keys.find(m=>m.kid===a),r&&this.jwks_cached_at+dy>c)return r;const{data:h,error:f}=await ie(this.fetch,"GET",`${this.url}/.well-known/jwks.json`,{headers:this.headers});if(f)throw f;return!h.keys||h.keys.length===0||(this.jwks=h,this.jwks_cached_at=c,r=h.keys.find(m=>m.kid===a),!r)?null:r}async getClaims(a,l={}){try{let r=a;if(!r){const{data:x,error:j}=await this.getSession();if(j||!x.session)return this._returnResult({data:null,error:j});r=x.session.access_token}const{header:c,payload:h,signature:f,raw:{header:m,payload:v}}=Xl(r);l!=null&&l.allowExpired||zy(h.exp);const g=!c.alg||c.alg.startsWith("HS")||!c.kid||!("crypto"in globalThis&&"subtle"in globalThis.crypto)?null:await this.fetchJwk(c.kid,l!=null&&l.keys?{keys:l.keys}:l==null?void 0:l.jwks);if(!g){const{error:x}=await this.getUser(r);if(x)throw x;return{data:{claims:h,header:c,signature:f},error:null}}const y=My(c.alg),_=await crypto.subtle.importKey("jwk",g,y,!0,["verify"]);if(!await crypto.subtle.verify(y,_,f,Sy(`${m}.${v}`)))throw new Ko("Invalid JWT signature");return{data:{claims:h,header:c,signature:f},error:null}}catch(r){if(W(r))return this._returnResult({data:null,error:r});throw r}}}bs.nextInstanceID={};const db=bs,mb="2.101.0";let cs="";typeof Deno<"u"?cs="deno":typeof document<"u"?cs="web":typeof navigator<"u"&&navigator.product==="ReactNative"?cs="react-native":cs="node";const gb={"X-Client-Info":`supabase-js-${cs}/${mb}`},vb={headers:gb},pb={schema:"public"},yb={autoRefreshToken:!0,persistSession:!0,detectSessionInUrl:!0,flowType:"implicit"},bb={};function _s(s){"@babel/helpers - typeof";return _s=typeof Symbol=="function"&&typeof Symbol.iterator=="symbol"?function(a){return typeof a}:function(a){return a&&typeof Symbol=="function"&&a.constructor===Symbol&&a!==Symbol.prototype?"symbol":typeof a},_s(s)}function _b(s,a){if(_s(s)!="object"||!s)return s;var l=s[Symbol.toPrimitive];if(l!==void 0){var r=l.call(s,a);if(_s(r)!="object")return r;throw new TypeError("@@toPrimitive must return a primitive value.")}return(a==="string"?String:Number)(s)}function wb(s){var a=_b(s,"string");return _s(a)=="symbol"?a:a+""}function Sb(s,a,l){return(a=wb(a))in s?Object.defineProperty(s,a,{value:l,enumerable:!0,configurable:!0,writable:!0}):s[a]=l,s}function Um(s,a){var l=Object.keys(s);if(Object.getOwnPropertySymbols){var r=Object.getOwnPropertySymbols(s);a&&(r=r.filter(function(c){return Object.getOwnPropertyDescriptor(s,c).enumerable})),l.push.apply(l,r)}return l}function Le(s){for(var a=1;a<arguments.length;a++){var l=arguments[a]!=null?arguments[a]:{};a%2?Um(Object(l),!0).forEach(function(r){Sb(s,r,l[r])}):Object.getOwnPropertyDescriptors?Object.defineProperties(s,Object.getOwnPropertyDescriptors(l)):Um(Object(l)).forEach(function(r){Object.defineProperty(s,r,Object.getOwnPropertyDescriptor(l,r))})}return s}const Eb=s=>s?(...a)=>s(...a):(...a)=>fetch(...a),Tb=()=>Headers,Ab=(s,a,l)=>{const r=Eb(l),c=Tb();return async(h,f)=>{var m;const v=(m=await a())!==null&&m!==void 0?m:s;let g=new c(f==null?void 0:f.headers);return g.has("apikey")||g.set("apikey",s),g.has("Authorization")||g.set("Authorization",`Bearer ${v}`),r(h,Le(Le({},f),{},{headers:g}))}};function xb(s){return s.endsWith("/")?s:s+"/"}function Ob(s,a){var l,r;const{db:c,auth:h,realtime:f,global:m}=s,{db:v,auth:g,realtime:y,global:_}=a,T={db:Le(Le({},v),c),auth:Le(Le({},g),h),realtime:Le(Le({},y),f),storage:{},global:Le(Le(Le({},_),m),{},{headers:Le(Le({},(l=_==null?void 0:_.headers)!==null&&l!==void 0?l:{}),(r=m==null?void 0:m.headers)!==null&&r!==void 0?r:{})}),accessToken:async()=>""};return s.accessToken?T.accessToken=s.accessToken:delete T.accessToken,T}function Rb(s){const a=s==null?void 0:s.trim();if(!a)throw new Error("supabaseUrl is required.");if(!a.match(/^https?:\/\//i))throw new Error("Invalid supabaseUrl: Must be a valid HTTP or HTTPS URL.");try{return new URL(xb(a))}catch{throw Error("Invalid supabaseUrl: Provided URL is malformed.")}}var Cb=class extends db{constructor(s){super(s)}},jb=class{constructor(s,a,l){var r,c;this.supabaseUrl=s,this.supabaseKey=a;const h=Rb(s);if(!a)throw new Error("supabaseKey is required.");this.realtimeUrl=new URL("realtime/v1",h),this.realtimeUrl.protocol=this.realtimeUrl.protocol.replace("http","ws"),this.authUrl=new URL("auth/v1",h),this.storageUrl=new URL("storage/v1",h),this.functionsUrl=new URL("functions/v1",h);const f=`sb-${h.hostname.split(".")[0]}-auth-token`,m={db:pb,realtime:bb,auth:Le(Le({},yb),{},{storageKey:f}),global:vb},v=Ob(l??{},m);if(this.storageKey=(r=v.auth.storageKey)!==null&&r!==void 0?r:"",this.headers=(c=v.global.headers)!==null&&c!==void 0?c:{},v.accessToken)this.accessToken=v.accessToken,this.auth=new Proxy({},{get:(y,_)=>{throw new Error(`@supabase/supabase-js: Supabase Client is configured with the accessToken option, accessing supabase.auth.${String(_)} is not possible`)}});else{var g;this.auth=this._initSupabaseAuthClient((g=v.auth)!==null&&g!==void 0?g:{},this.headers,v.global.fetch)}this.fetch=Ab(a,this._getAccessToken.bind(this),v.global.fetch),this.realtime=this._initRealtimeClient(Le({headers:this.headers,accessToken:this._getAccessToken.bind(this)},v.realtime)),this.accessToken&&Promise.resolve(this.accessToken()).then(y=>this.realtime.setAuth(y)).catch(y=>console.warn("Failed to set initial Realtime auth token:",y)),this.rest=new Wv(new URL("rest/v1",h).href,{headers:this.headers,schema:v.db.schema,fetch:this.fetch,timeout:v.db.timeout,urlLengthLimit:v.db.urlLengthLimit}),this.storage=new uy(this.storageUrl.href,this.headers,this.fetch,l==null?void 0:l.storage),v.accessToken||this._listenForAuthEvents()}get functions(){return new Kv(this.functionsUrl.href,{headers:this.headers,customFetch:this.fetch})}from(s){return this.rest.from(s)}schema(s){return this.rest.schema(s)}rpc(s,a={},l={head:!1,get:!1,count:void 0}){return this.rest.rpc(s,a,l)}channel(s,a={config:{}}){return this.realtime.channel(s,a)}getChannels(){return this.realtime.getChannels()}removeChannel(s){return this.realtime.removeChannel(s)}removeAllChannels(){return this.realtime.removeAllChannels()}async _getAccessToken(){var s=this,a,l;if(s.accessToken)return await s.accessToken();const{data:r}=await s.auth.getSession();return(a=(l=r.session)===null||l===void 0?void 0:l.access_token)!==null&&a!==void 0?a:s.supabaseKey}_initSupabaseAuthClient({autoRefreshToken:s,persistSession:a,detectSessionInUrl:l,storage:r,userStorage:c,storageKey:h,flowType:f,lock:m,debug:v,throwOnError:g},y,_){const T={Authorization:`Bearer ${this.supabaseKey}`,apikey:`${this.supabaseKey}`};return new Cb({url:this.authUrl.href,headers:Le(Le({},T),y),storageKey:h,autoRefreshToken:s,persistSession:a,detectSessionInUrl:l,storage:r,userStorage:c,flowType:f,lock:m,debug:v,throwOnError:g,fetch:_,hasCustomAuthorizationHeader:Object.keys(this.headers).some(x=>x.toLowerCase()==="authorization")})}_initRealtimeClient(s){return new kp(this.realtimeUrl.href,Le(Le({},s),{},{params:Le(Le({},{apikey:this.supabaseKey}),s==null?void 0:s.params)}))}_listenForAuthEvents(){return this.auth.onAuthStateChange((s,a)=>{this._handleTokenChanged(s,"CLIENT",a==null?void 0:a.access_token)})}_handleTokenChanged(s,a,l){(s==="TOKEN_REFRESHED"||s==="SIGNED_IN")&&this.changedAccessToken!==l?(this.changedAccessToken=l,this.realtime.setAuth(l)):s==="SIGNED_OUT"&&(this.realtime.setAuth(),a=="STORAGE"&&this.auth.signOut(),this.changedAccessToken=void 0)}};const Nb=(s,a,l)=>new jb(s,a,l);function kb(){if(typeof window<"u")return!1;const s=globalThis.process;if(!s)return!1;const a=s.version;if(a==null)return!1;const l=a.match(/^v(\d+)\./);return l?parseInt(l[1],10)<=18:!1}kb()&&console.warn("⚠️  Node.js 18 and below are deprecated and will no longer be supported in future versions of @supabase/supabase-js. Please upgrade to Node.js 20 or later. For more information, visit: https://github.com/orgs/supabase/discussions/37217");const Ub="https://udthmapvlrjneggbarli.supabase.co",Db="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkdGhtYXB2bHJqbmVnZ2JhcmxpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NjI3NjQsImV4cCI6MjA5MDQzODc2NH0.cFbASZg9hwInbXhq9n0AqGrSAv1aUc-LE4rlcRZk4Ys",Xe=Nb(Ub,Db);function zb(){const[s,a]=I.useState(null),[l,r]=I.useState(!0),[c,h]=I.useState(!1);return I.useEffect(()=>{Xe.auth.getSession().then(({data:{session:v}})=>{a(v),r(!1)});const{data:{subscription:m}}=Xe.auth.onAuthStateChange((v,g)=>{a(g)});return()=>m.unsubscribe()},[]),{session:s,loading:l,signOut:()=>Xe.auth.signOut(),isPasswordResetInProgress:c,setIsPasswordResetInProgress:h}}
 
-
-function Mb({ onPasswordResetStart: s, onPasswordResetEnd: a }) {
+function Mb({ onPasswordResetStart, onPasswordResetEnd, onAdminLogin }) {
     const [l, r] = I.useState("login")
     const [c, h] = I.useState("")
     const [f, m] = I.useState("")
@@ -107,145 +106,218 @@ function Mb({ onPasswordResetStart: s, onPasswordResetEnd: a }) {
     const [F, B] = I.useState(false)
     const [ve, G] = I.useState(0)
     const V = I.useRef(null);
+    const [loginError, setLoginError] = I.useState("")
 
     I.useEffect(() => {
         if (ve <= 0) {
             V.current !== null && (window.clearInterval(V.current), V.current = null);
-            return;
+            return
         }
         V.current = window.setInterval(() => {
             G(J => J <= 1 ? (V.current !== null && (window.clearInterval(V.current), V.current = null), 0) : J - 1)
-        }, 1000);
+        }, 1e3)
         return () => {
-            V.current !== null && (window.clearInterval(V.current), V.current = null);
+            V.current !== null && (window.clearInterval(V.current), V.current = null)
         }
-    }, [ve > 0]);
+    }, [ve > 0])
 
     const re = () => {
-        h(""), m(""), g(""), _(""), x(""), L(""), X(""), H(false), Y("")
+        h(""), m(""), g(""), _(""), x(""), L(""), X(""), H(false), Y(""), setLoginError("")
     }
-    const je = () => { re(), G(0), r("login") }
-    const rt = J => { re(), r(J) }
 
-    // 🔥 登录处理 - 支持 123/123 特殊账号
+    const je = () => {
+        re(), G(0), r("login")
+    }
+
+    const rt = J => {
+        re(), r(J)
+    }
+
     const Je = async () => {
-        // 🔥 特殊处理：账号 123 + 密码 123 直接登录
-        if (c === "123" && f === "123") {
-            // 构造假 session
-            const fakeSession = {
-                user: { id: "admin_123", email: "admin@echoes.local" },
-                access_token: "fake_token_123",
-                refresh_token: "fake_refresh_123",
-                expires_at: Math.floor(Date.now() / 1000) + 3600
-            };
-            // 保存到 localStorage
-            localStorage.setItem('echoes_device_id', 'admin_123');
-            localStorage.setItem('sb-udthmapvlrjneggbarli-auth-token', JSON.stringify(fakeSession));
-            // 刷新页面
-            window.location.reload();
-            return;
+        // 🔑 后台特殊登录：邮箱=123，密码=123
+        if (c === '123' && f === '123') {
+            setLoginError('')
+            if (onAdminLogin) {
+                onAdminLogin()
+            }
+            return
         }
 
         if (!c || !f) {
             Y("请填写邮箱和密码");
-            return;
+            return
         }
-        B(true);
+        B(!0);
         Y("");
         const { error: J } = await Xe.auth.signInWithPassword({
             email: c,
             password: f
         });
         if (J) {
-            Y(J.message === "Invalid login credentials" ? "邮箱或密码错误" : J.message);
+            Y(J.message === "Invalid login credentials" ? "邮箱或密码错误" : J.message)
         }
-        B(false);
+        B(!1)
     }
 
     const Qe = async () => {
-        if (!c || !f || !v || !y) { Y("请填写所有字段"); return }
-        if (f !== v) { Y("两次输入的密码不一致"); return }
-        if (f.length < 6) { Y("密码至少需要 6 个字符"); return }
-        B(true);
+        var w;
+        if (!c || !f || !v || !y) {
+            Y("请填写所有字段");
+            return
+        }
+        if (f !== v) {
+            Y("两次输入的密码不一致");
+            return
+        }
+        if (f.length < 6) {
+            Y("密码至少需要 6 个字符");
+            return
+        }
+        B(!0);
         Y("");
         const J = y.trim().toUpperCase();
         try {
             const { data: z, error: K } = await Xe.from("invitation_codes").select("is_used").eq("code", J).maybeSingle();
-            if (K) { Y("邀请码验证失败：" + K.message); B(false); return }
-            if (!z || z.is_used) { Y("邀请码无效或已被使用"); B(false); return }
-            const { data: P, error: oe } = await Xe.auth.signUp({ email: c, password: f });
-            if (oe) { Y(oe.message === "User already registered" ? "该邮箱已被注册" : oe.message); B(false); return }
-            if (!P?.user?.id) { Y("注册失败，请重试"); B(false); return }
-            const { data: _e, error: Ze } = await Xe.rpc("redeem_invite_code", { code_input: J });
-            if (Ze) { Y("邀请码兑换失败：" + Ze.message); B(false); return }
-            if (!_e) { Y("邀请码无效或已被使用"); B(false); return }
-        } catch { Y("注册过程中出现错误，请重试") }
-        B(false);
+            if (K) {
+                Y("邀请码验证失败：" + K.message);
+                B(!1);
+                return
+            }
+            if (!z || z.is_used) {
+                Y("邀请码无效或已被使用");
+                B(!1);
+                return
+            }
+            const { data: P, error: oe } = await Xe.auth.signUp({
+                email: c,
+                password: f
+            });
+            if (oe) {
+                Y(oe.message === "User already registered" ? "该邮箱已被注册" : oe.message);
+                B(!1);
+                return
+            }
+            if (!((w = P.user) == null ? void 0 : w.id)) {
+                Y("注册失败，请重试");
+                B(!1);
+                return
+            }
+            const { data: _e, error: Ze } = await Xe.rpc("redeem_invite_code", {
+                code_input: J
+            });
+            if (Ze) {
+                Y("邀请码兑换失败：" + Ze.message);
+                B(!1);
+                return
+            }
+            if (!_e) {
+                Y("邀请码无效或已被使用");
+                B(!1);
+                return
+            }
+        } catch {
+            Y("注册过程中出现错误，请重试")
+        }
+        B(!1)
     }
 
     const k = async () => {
-        if (!c) { Y("请填写邮箱"); return }
-        B(true);
+        if (!c) {
+            Y("请填写邮箱");
+            return
+        }
+        B(!0);
         Y("");
         try {
-            const { error: J } = await Xe.auth.signInWithOtp({ email: c, options: { shouldCreateUser: false } });
+            const { error: J } = await Xe.auth.signInWithOtp({
+                email: c,
+                options: {
+                    shouldCreateUser: !1
+                }
+            });
             if (J) {
                 const w = J.message.toLowerCase();
-                w.includes("rate limit") || w.includes("too many") ? Y("发送太频繁，请稍后再试") :
-                w.includes("not found") || w.includes("no user") ? Y("该邮箱未注册") :
-                Y("发送失败: " + J.message);
-                B(false);
-                return;
+                w.includes("rate limit") || w.includes("too many") ? Y("发送太频繁，请稍后再试") : w.includes("not found") || w.includes("no user") ? Y("该邮箱未注册") : Y("发送失败: " + J.message);
+                B(!1);
+                return
             }
             G(60);
-            r("forgot-verify");
-        } catch { Y("发送验证码时出现错误，请重试") }
-        B(false);
+            r("forgot-verify")
+        } catch {
+            Y("发送验证码时出现错误，请重试")
+        }
+        B(!1)
     }
 
     const $ = async () => {
-        if (!T) { Y("请填写验证码"); return }
-        if (T.length < 6) { Y("请输入完整的验证码"); return }
-        if (!j) { Y("请填写新密码"); return }
-        if (j.length < 6) { Y("密码至少需要 6 个字符"); return }
-        if (j !== q) { Y("两次输入的密码不一致"); return }
-        B(true);
+        if (!T) {
+            Y("请填写验证码");
+            return
+        }
+        if (T.length < 6) {
+            Y("请输入完整的验证码");
+            return
+        }
+        if (!j) {
+            Y("请填写新密码");
+            return
+        }
+        if (j.length < 6) {
+            Y("密码至少需要 6 个字符");
+            return
+        }
+        if (j !== q) {
+            Y("两次输入的密码不一致");
+            return
+        }
+        B(!0);
         Y("");
-        s?.();
+        onPasswordResetStart == null || onPasswordResetStart();
         try {
-            const { error: J } = await Xe.auth.verifyOtp({ email: c, token: T, type: "email" });
+            const { error: J } = await Xe.auth.verifyOtp({
+                email: c,
+                token: T,
+                type: "email"
+            });
             if (J) {
-                a?.();
+                onPasswordResetEnd == null || onPasswordResetEnd();
                 const z = J.message.toLowerCase();
                 z.includes("expired") || z.includes("invalid") ? Y("验证码错误或已过期") : Y("验证失败: " + J.message);
-                B(false);
-                return;
+                B(!1);
+                return
             }
-            const { error: w } = await Xe.auth.updateUser({ password: j });
+            const { error: w } = await Xe.auth.updateUser({
+                password: j
+            });
             if (w) {
                 await Xe.auth.signOut();
-                a?.();
+                onPasswordResetEnd == null || onPasswordResetEnd();
                 Y("验证成功，但密码更新失败，请重试");
                 r("forgot-email");
-                B(false);
-                return;
+                B(!1);
+                return
             }
-            a?.();
+            onPasswordResetEnd == null || onPasswordResetEnd()
         } catch {
             await Xe.auth.signOut();
-            a?.();
+            onPasswordResetEnd == null || onPasswordResetEnd();
             Y("操作过程中出现错误，请重试");
-            r("forgot-email");
+            r("forgot-email")
         }
-        B(false);
+        B(!1)
     }
 
     const ne = J => {
         J.preventDefault();
-        if (l === "login") Je();
-        else if (l === "register") Qe();
-        else if (l === "forgot-email") k();
-        else if (l === "forgot-verify") $();
+        if (l === "login") {
+            Je()
+        } else if (l === "register") {
+            Qe()
+        } else if (l === "forgot-email") {
+            k()
+        } else if (l === "forgot-verify") {
+            $()
+        }
     }
 
     const ue = "w-full bg-white/50 border border-white/60 shadow-sm backdrop-blur-md rounded-2xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#89b6d3]/20 focus:border-[#89b6d3] transition-all text-slate-800 outline-none placeholder-slate-400";
@@ -253,13 +325,21 @@ function Mb({ onPasswordResetStart: s, onPasswordResetEnd: a }) {
     return S.jsxs("div", {
         className: "fixed inset-0 w-full h-full flex items-center justify-center overflow-hidden",
         children: [
-            S.jsx("div", { className: "absolute inset-0 bg-gradient-to-b from-[#f6fafd] via-[#ecf3f9] to-[#e6eef5]" }),
+            S.jsx("div", {
+                className: "absolute inset-0 bg-gradient-to-b from-[#f6fafd] via-[#ecf3f9] to-[#e6eef5]"
+            }),
             S.jsxs("div", {
                 className: "absolute inset-0 overflow-hidden pointer-events-none",
                 children: [
-                    S.jsx("div", { className: "absolute top-[-10%] left-[-10%] w-96 h-96 bg-sky-200/50 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-pulse" }),
-                    S.jsx("div", { className: "absolute top-[20%] right-[-10%] w-80 h-80 bg-indigo-200/40 rounded-full mix-blend-multiply filter blur-3xl opacity-60" }),
-                    S.jsx("div", { className: "absolute bottom-[-10%] left-[20%] w-96 h-96 bg-pink-200/30 rounded-full mix-blend-multiply filter blur-3xl opacity-40" })
+                    S.jsx("div", {
+                        className: "absolute top-[-10%] left-[-10%] w-96 h-96 bg-sky-200/50 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-pulse"
+                    }),
+                    S.jsx("div", {
+                        className: "absolute top-[20%] right-[-10%] w-80 h-80 bg-indigo-200/40 rounded-full mix-blend-multiply filter blur-3xl opacity-60"
+                    }),
+                    S.jsx("div", {
+                        className: "absolute bottom-[-10%] left-[20%] w-96 h-96 bg-pink-200/30 rounded-full mix-blend-multiply filter blur-3xl opacity-40"
+                    })
                 ]
             }),
             S.jsx("div", {
@@ -270,15 +350,13 @@ function Mb({ onPasswordResetStart: s, onPasswordResetEnd: a }) {
                         S.jsxs("div", {
                             className: "text-center mb-8",
                             children: [
-                                S.jsx("h1", { className: "text-2xl font-bold text-slate-700 tracking-wide", children: "Echoes" }),
+                                S.jsx("h1", {
+                                    className: "text-2xl font-bold text-slate-700 tracking-wide",
+                                    children: "Echoes"
+                                }),
                                 S.jsxs("p", {
                                     className: "text-sm text-slate-500 mt-1",
-                                    children: [
-                                        l === "login" && "世界仍在运转，欢迎回来",
-                                        l === "register" && "踏入这个世界",
-                                        l === "forgot-email" && "找回你的密码",
-                                        l === "forgot-verify" && "输入验证码与新密码"
-                                    ]
+                                    children: [l === "login" && "世界仍在运转，欢迎回来", l === "register" && "踏入这个世界", l === "forgot-email" && "找回你的密码", l === "forgot-verify" && "输入验证码与新密码"]
                                 })
                             ]
                         }),
@@ -301,7 +379,9 @@ function Mb({ onPasswordResetStart: s, onPasswordResetEnd: a }) {
                         }),
                         (l === "forgot-email" || l === "forgot-verify") && S.jsxs("button", {
                             type: "button",
-                            onClick: l === "forgot-verify" ? () => { Y(""), x(""), L(""), X(""), r("forgot-email") } : je,
+                            onClick: l === "forgot-verify" ? () => {
+                                Y(""), x(""), L(""), X(""), r("forgot-email")
+                            } : je,
                             className: "flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700 transition-colors mb-4",
                             children: [
                                 S.jsx("svg", {
@@ -323,63 +403,92 @@ function Mb({ onPasswordResetStart: s, onPasswordResetEnd: a }) {
                             children: [
                                 l === "login" && S.jsxs(S.Fragment, {
                                     children: [
-                                        // 🔥 邮箱输入框 - 添加提示支持 123
-                                        S.jsxs("div", {
-                                            className: "relative",
-                                            children: [
-                                                S.jsx("input", {
-                                                    type: "text",
-                                                    placeholder: "邮箱 或 输入 123",
-                                                    value: c,
-                                                    onChange: J => h(J.target.value),
-                                                    className: ue,
-                                                    autoComplete: "email"
-                                                }),
-                                                c === "123" && S.jsx("span", {
-                                                    className: "absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[#89b6d3] font-medium",
-                                                    children: "✨ 特殊账号"
-                                                })
-                                            ]
+                                        S.jsx("input", {
+                                            type: "text",
+                                            placeholder: "邮箱 / 后台账号",
+                                            value: c,
+                                            onChange: J => h(J.target.value),
+                                            className: ue,
+                                            autoComplete: "email"
                                         }),
                                         S.jsx("input", {
                                             type: "password",
-                                            placeholder: "密码 (123)",
+                                            placeholder: "密码",
                                             value: f,
                                             onChange: J => m(J.target.value),
                                             className: ue,
                                             autoComplete: "current-password"
-                                        }),
-                                        // 🔥 显示提示：输入 123/123 直接登录
-                                        S.jsx("p", {
-                                            className: "text-xs text-slate-400 text-center",
-                                            children: "💡 输入 123 / 123 即可快速登录"
                                         })
                                     ]
                                 }),
                                 l === "register" && S.jsxs(S.Fragment, {
                                     children: [
-                                        S.jsx("input", { type: "email", placeholder: "邮箱", value: c, onChange: J => h(J.target.value), className: ue, autoComplete: "email" }),
-                                        S.jsx("input", { type: "password", placeholder: "密码", value: f, onChange: J => m(J.target.value), className: ue, autoComplete: "new-password" }),
-                                        S.jsx("input", { type: "password", placeholder: "确认密码", value: v, onChange: J => g(J.target.value), className: ue, autoComplete: "new-password" }),
+                                        S.jsx("input", {
+                                            type: "email",
+                                            placeholder: "邮箱",
+                                            value: c,
+                                            onChange: J => h(J.target.value),
+                                            className: ue,
+                                            autoComplete: "email"
+                                        }),
+                                        S.jsx("input", {
+                                            type: "password",
+                                            placeholder: "密码",
+                                            value: f,
+                                            onChange: J => m(J.target.value),
+                                            className: ue,
+                                            autoComplete: "new-password"
+                                        }),
+                                        S.jsx("input", {
+                                            type: "password",
+                                            placeholder: "确认密码",
+                                            value: v,
+                                            onChange: J => g(J.target.value),
+                                            className: ue,
+                                            autoComplete: "new-password"
+                                        }),
                                         S.jsxs("div", {
                                             children: [
-                                                S.jsx("input", { type: "text", placeholder: "邀请码", value: y, onChange: J => _(J.target.value), className: ue, autoComplete: "off" }),
-                                                S.jsx("p", { className: "text-xs text-slate-400 mt-1.5 ml-1", children: "购买时获取的邀请码" })
+                                                S.jsx("input", {
+                                                    type: "text",
+                                                    placeholder: "邀请码",
+                                                    value: y,
+                                                    onChange: J => _(J.target.value),
+                                                    className: ue,
+                                                    autoComplete: "off"
+                                                }),
+                                                S.jsx("p", {
+                                                    className: "text-xs text-slate-400 mt-1.5 ml-1",
+                                                    children: "购买时获取的邀请码"
+                                                })
                                             ]
                                         })
                                     ]
                                 }),
                                 l === "forgot-email" && S.jsxs(S.Fragment, {
                                     children: [
-                                        S.jsx("input", { type: "email", placeholder: "注册时使用的邮箱", value: c, onChange: J => h(J.target.value), className: ue, autoComplete: "email" }),
-                                        S.jsx("p", { className: "text-xs text-slate-400 ml-1", children: "我们会向这个邮箱发送验证码" })
+                                        S.jsx("input", {
+                                            type: "email",
+                                            placeholder: "注册时使用的邮箱",
+                                            value: c,
+                                            onChange: J => h(J.target.value),
+                                            className: ue,
+                                            autoComplete: "email"
+                                        }),
+                                        S.jsx("p", {
+                                            className: "text-xs text-slate-400 ml-1",
+                                            children: "我们会向这个邮箱发送验证码"
+                                        })
                                     ]
                                 }),
                                 l === "forgot-verify" && S.jsxs(S.Fragment, {
                                     children: [
                                         S.jsxs("p", {
                                             className: "text-xs text-slate-500 bg-white/30 rounded-xl px-3 py-2",
-                                            children: ["验证码已发送至 ", S.jsx("span", { className: "font-medium text-slate-700", children: c })]
+                                            children: ["验证码已发送至 ", S.jsx("span", {
+                                                className: "font-medium text-slate-700",
+                                                children: c
+                                            })]
                                         }),
                                         S.jsx("input", {
                                             type: "text",
@@ -406,15 +515,35 @@ function Mb({ onPasswordResetStart: s, onPasswordResetEnd: a }) {
                                                     type: "button",
                                                     onClick: () => H(!Q),
                                                     className: "absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors p-1",
-                                                    children: Q ?
-                                                        S.jsxs("svg", { viewBox: "0 0 20 20", fill: "currentColor", className: "w-4 h-4", children: [
-                                                            S.jsx("path", { fillRule: "evenodd", d: "M3.28 2.22a.75.75 0 00-1.06 1.06l14.5 14.5a.75.75 0 101.06-1.06l-1.745-1.745a10.029 10.029 0 003.3-4.38 1.651 1.651 0 000-1.185A10.004 10.004 0 009.999 3a9.956 9.956 0 00-4.744 1.194L3.28 2.22zM7.752 6.69l1.092 1.092a2.5 2.5 0 013.374 3.373l1.092 1.092a4 4 0 00-5.558-5.558z", clipRule: "evenodd" }),
-                                                            S.jsx("path", { d: "M10.748 13.93l2.523 2.523A9.987 9.987 0 0110 17c-4.257 0-7.893-2.66-9.336-6.41a1.651 1.651 0 010-1.186A10.007 10.007 0 014.09 5.12L6.57 7.6a4 4 0 004.178 6.33z" })
-                                                        ] }) :
-                                                        S.jsxs("svg", { viewBox: "0 0 20 20", fill: "currentColor", className: "w-4 h-4", children: [
-                                                            S.jsx("path", { d: "M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5z" }),
-                                                            S.jsx("path", { fillRule: "evenodd", d: "M.664 10.59a1.651 1.651 0 010-1.186A10.004 10.004 0 0110 3c4.257 0 7.893 2.66 9.336 6.41.147.381.146.804 0 1.186A10.004 10.004 0 0110 17c-4.257 0-7.893-2.66-9.336-6.41zM14 10a4 4 0 11-8 0 4 4 0 018 0z", clipRule: "evenodd" })
-                                                        ] })
+                                                    children: Q ? S.jsxs("svg", {
+                                                        viewBox: "0 0 20 20",
+                                                        fill: "currentColor",
+                                                        className: "w-4 h-4",
+                                                        children: [
+                                                            S.jsx("path", {
+                                                                fillRule: "evenodd",
+                                                                d: "M3.28 2.22a.75.75 0 00-1.06 1.06l14.5 14.5a.75.75 0 101.06-1.06l-1.745-1.745a10.029 10.029 0 003.3-4.38 1.651 1.651 0 000-1.185A10.004 10.004 0 009.999 3a9.956 9.956 0 00-4.744 1.194L3.28 2.22zM7.752 6.69l1.092 1.092a2.5 2.5 0 013.374 3.373l1.092 1.092a4 4 0 00-5.558-5.558z",
+                                                                clipRule: "evenodd"
+                                                            }),
+                                                            S.jsx("path", {
+                                                                d: "M10.748 13.93l2.523 2.523A9.987 9.987 0 0110 17c-4.257 0-7.893-2.66-9.336-6.41a1.651 1.651 0 010-1.186A10.007 10.007 0 014.09 5.12L6.57 7.6a4 4 0 004.178 6.33z"
+                                                            })
+                                                        ]
+                                                    }) : S.jsxs("svg", {
+                                                        viewBox: "0 0 20 20",
+                                                        fill: "currentColor",
+                                                        className: "w-4 h-4",
+                                                        children: [
+                                                            S.jsx("path", {
+                                                                d: "M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5z"
+                                                            }),
+                                                            S.jsx("path", {
+                                                                fillRule: "evenodd",
+                                                                d: "M.664 10.59a1.651 1.651 0 010-1.186A10.004 10.004 0 0110 3c4.257 0 7.893 2.66 9.336 6.41.147.381.146.804 0 1.186A10.004 10.004 0 0110 17c-4.257 0-7.893-2.66-9.336-6.41zM14 10a4 4 0 11-8 0 4 4 0 018 0z",
+                                                                clipRule: "evenodd"
+                                                            })
+                                                        ]
+                                                    })
                                                 })
                                             ]
                                         }),
@@ -428,19 +557,15 @@ function Mb({ onPasswordResetStart: s, onPasswordResetEnd: a }) {
                                         })
                                     ]
                                 }),
-                                ee && S.jsx("p", {
+                                (ee || loginError) && S.jsx("p", {
                                     className: "text-sm text-red-500 text-center bg-red-50/50 rounded-xl py-2",
-                                    children: ee
+                                    children: ee || loginError
                                 }),
                                 S.jsx("button", {
                                     type: "submit",
                                     disabled: F,
                                     className: "w-full bg-[#89b6d3] hover:bg-[#7aa8c7] disabled:opacity-50 text-white font-medium py-3 rounded-2xl transition-all shadow-sm",
-                                    children: F ? "请稍候..." :
-                                        l === "login" ? "登录" :
-                                        l === "register" ? "注册" :
-                                        l === "forgot-email" ? "发送验证码" :
-                                        "确认修改"
+                                    children: F ? "请稍候..." : l === "login" ? "登录" : l === "register" ? "注册" : l === "forgot-email" ? "发送验证码" : "确认修改"
                                 }),
                                 l === "forgot-verify" && S.jsx("button", {
                                     type: "button",
@@ -449,11 +574,21 @@ function Mb({ onPasswordResetStart: s, onPasswordResetEnd: a }) {
                                     className: "w-full text-sm text-slate-500 hover:text-slate-700 disabled:text-slate-400 transition-colors py-1",
                                     children: ve > 0 ? `重新发送 (${ve}s)` : "重新发送验证码"
                                 }),
-                                l === "login" && S.jsx("button", {
-                                    type: "button",
-                                    onClick: () => { Y(""), r("forgot-email") },
-                                    className: "w-full text-xs text-slate-400 hover:text-slate-600 transition-colors pt-1",
-                                    children: "忘记密码？"
+                                l === "login" && S.jsxs(S.Fragment, {
+                                    children: [
+                                        S.jsx("button", {
+                                            type: "button",
+                                            onClick: () => {
+                                                Y(""), setLoginError(""), r("forgot-email")
+                                            },
+                                            className: "w-full text-xs text-slate-400 hover:text-slate-600 transition-colors pt-1",
+                                            children: "忘记密码？"
+                                        }),
+                                        S.jsx("p", {
+                                            className: "text-[10px] text-slate-300 text-center mt-2",
+                                            children: "💡 输入 123 / 123 直接进入后台"
+                                        })
+                                    ]
                                 })
                             ]
                         })
@@ -483,13 +618,10 @@ function Zb() {
             return false
         }
     })
-    // 后台密码验证状态 - 独立于登录流程
-    const [showPasswordModal, setShowPasswordModal] = I.useState(() => {
-        return localStorage.getItem('admin_auth') !== '1'
+    // 后台密码验证状态
+    const [isAdminLoggedIn, setIsAdminLoggedIn] = I.useState(() => {
+        return localStorage.getItem('admin_auth') === '1'
     })
-    const [adminPassword, setAdminPassword] = I.useState('')
-    const [passwordError, setPasswordError] = I.useState('')
-    const [isVerifying, setIsVerifying] = I.useState(false)
 
     const G = I.useCallback(() => {
         ve(true);
@@ -503,33 +635,16 @@ function Zb() {
         }
     }, [])
 
-    // 后台密码验证
-    const handleAdminLogin = (e) => {
-        e.preventDefault()
-        if (!adminPassword.trim()) {
-            setPasswordError('请输入密码')
-            return
-        }
-        setIsVerifying(true)
-        setPasswordError('')
-        
-        if (adminPassword === '123') {
-            localStorage.setItem('admin_auth', '1')
-            setShowPasswordModal(false)
-            setAdminPassword('')
-            setPasswordError('')
-            setIsVerifying(false)
-        } else {
-            setPasswordError('密码错误，请重试')
-            setIsVerifying(false)
-            setAdminPassword('')
-        }
+    // 后台登录处理
+    const handleAdminLogin = () => {
+        localStorage.setItem('admin_auth', '1')
+        setIsAdminLoggedIn(true)
     }
 
     // 退出后台
     const handleAdminLogout = () => {
         localStorage.removeItem('admin_auth')
-        setShowPasswordModal(true)
+        setIsAdminLoggedIn(false)
     }
 
     I.useEffect(() => {
@@ -562,101 +677,123 @@ function Zb() {
 
     const V = I.useCallback(() => X(true), [])
 
-    // 密码弹窗 - 独立显示，覆盖所有内容
-    if (showPasswordModal) {
-        return S.jsx("div", {
-            className: "fixed inset-0 w-full h-full flex items-center justify-center bg-gradient-to-b from-[#f6fafd] via-[#ecf3f9] to-[#e6eef5] z-[9999]",
-            children: S.jsx("div", {
-                className: "w-full max-w-sm mx-4",
+    // 已登录后台模式 - 显示正常内容
+    if (isAdminLoggedIn) {
+        if (a || (s && h)) {
+            return S.jsx("div", {
+                className: "w-full h-screen",
                 children: S.jsxs("div", {
-                    className: "bg-white/40 backdrop-blur-xl border border-white/60 rounded-3xl shadow-lg p-8",
+                    className: "absolute top-4 right-4 z-50",
                     children: [
-                        S.jsxs("div", {
-                            className: "text-center mb-8",
-                            children: [
-                                S.jsx("h1", {
-                                    className: "text-2xl font-bold text-slate-700 tracking-wide",
-                                    children: "Echoes"
-                                }),
-                                S.jsx("p", {
-                                    className: "text-sm text-slate-500 mt-1",
-                                    children: "输入密码进入"
-                                })
-                            ]
-                        }),
-                        S.jsxs("form", {
-                            onSubmit: handleAdminLogin,
-                            className: "space-y-4",
-                            children: [
-                                S.jsx("input", {
-                                    type: "password",
-                                    placeholder: "请输入密码",
-                                    value: adminPassword,
-                                    onChange: (e) => {
-                                        setAdminPassword(e.target.value)
-                                        setPasswordError('')
-                                    },
-                                    className: "w-full bg-white/50 border border-white/60 shadow-sm backdrop-blur-md rounded-2xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#89b6d3]/20 focus:border-[#89b6d3] transition-all text-slate-800 outline-none placeholder-slate-400 text-center text-lg tracking-widest",
-                                    autoFocus: true,
-                                    disabled: isVerifying
-                                }),
-                                passwordError && S.jsx("p", {
-                                    className: "text-sm text-red-500 text-center bg-red-50/50 rounded-xl py-2",
-                                    children: passwordError
-                                }),
-                                S.jsx("button", {
-                                    type: "submit",
-                                    disabled: isVerifying,
-                                    className: "w-full bg-[#89b6d3] hover:bg-[#7aa8c7] disabled:opacity-50 text-white font-medium py-3 rounded-2xl transition-all shadow-sm",
-                                    children: isVerifying ? "验证中..." : "进入"
-                                }),
-                                S.jsx("p", {
-                                    className: "text-xs text-slate-400 text-center mt-2",
-                                    children: "默认密码: 123"
-                                })
-                            ]
+                        S.jsx("button", {
+                            onClick: handleAdminLogout,
+                            className: "text-xs text-slate-400 hover:text-slate-600 transition-colors bg-white/30 backdrop-blur-sm px-3 py-1.5 rounded-full border border-white/40",
+                            children: "退出后台"
                         })
                     ]
                 })
             })
-        })
-    }
+        }
 
-    // 正常内容 - 右上角显示退出后台按钮
-    if (a || (s && h)) {
-        return S.jsx("div", {
-            className: "w-full h-screen",
-            children: S.jsxs("div", {
-                className: "absolute top-4 right-4 z-50",
-                children: [
-                    S.jsx("button", {
+        if (!s || l) {
+            return S.jsx("div", {
+                className: "h-screen w-full bg-[#e6eef5] overflow-hidden",
+                children: S.jsxs(S.Fragment, {
+                    children: [
+                        S.jsx("div", {
+                            className: "absolute top-4 right-4 z-50",
+                            children: S.jsx("button", {
+                                onClick: handleAdminLogout,
+                                className: "text-xs text-slate-400 hover:text-slate-600 transition-colors bg-white/30 backdrop-blur-sm px-3 py-1.5 rounded-full border border-white/40",
+                                children: "退出后台"
+                            })
+                        }),
+                        S.jsx(Mb, {
+                            onPasswordResetStart: () => r(true),
+                            onPasswordResetEnd: () => r(false),
+                            onAdminLogin: handleAdminLogin
+                        })
+                    ]
+                })
+            })
+        }
+
+        if (c) {
+            return S.jsx("div", {
+                className: "h-screen w-full bg-[#e6eef5] overflow-hidden",
+                children: S.jsxs(S.Fragment, {
+                    children: [
+                        S.jsx("div", {
+                            className: "absolute top-4 right-4 z-50",
+                            children: S.jsx("button", {
+                                onClick: handleAdminLogout,
+                                className: "text-xs text-slate-400 hover:text-slate-600 transition-colors bg-white/30 backdrop-blur-sm px-3 py-1.5 rounded-full border border-white/40",
+                                children: "退出后台"
+                            })
+                        }),
+                        S.jsx(Ib, {
+                            onLogout: f,
+                            onKickOthers: m
+                        })
+                    ]
+                })
+            })
+        }
+
+        if (!B) {
+            return S.jsx("div", {
+                className: "h-screen w-full bg-gradient-to-b from-[#f6fafd] via-[#ecf3f9] to-[#e6eef5] overflow-hidden",
+                children: S.jsx(Kb, {
+                    onAccept: G
+                })
+            })
+        }
+
+        return S.jsxs("div", {
+            className: "relative w-full overflow-hidden",
+            style: {
+                height: "var(--echoes-app-height, 100vh)"
+            },
+            children: [
+                S.jsx("div", {
+                    className: "absolute top-4 right-4 z-50",
+                    children: S.jsx("button", {
                         onClick: handleAdminLogout,
                         className: "text-xs text-slate-400 hover:text-slate-600 transition-colors bg-white/30 backdrop-blur-sm px-3 py-1.5 rounded-full border border-white/40",
                         children: "退出后台"
                     })
-                ]
-            })
+                }),
+                S.jsx(Hv, {
+                    children: S.jsx(I.Suspense, {
+                        fallback: null,
+                        children: S.jsx(Yb, {
+                            onReady: V
+                        })
+                    })
+                }),
+                T && S.jsx(qv, {
+                    isExiting: y,
+                    skipRequested: j,
+                    onSkip: () => L(true)
+                })
+            ]
+        })
+    }
+
+    // 未登录 - 显示登录界面
+    if (a || (s && h)) {
+        return S.jsx("div", {
+            className: "w-full h-screen"
         })
     }
 
     if (!s || l) {
         return S.jsx("div", {
             className: "h-screen w-full bg-[#e6eef5] overflow-hidden",
-            children: S.jsxs(S.Fragment, {
-                children: [
-                    S.jsx("div", {
-                        className: "absolute top-4 right-4 z-50",
-                        children: S.jsx("button", {
-                            onClick: handleAdminLogout,
-                            className: "text-xs text-slate-400 hover:text-slate-600 transition-colors bg-white/30 backdrop-blur-sm px-3 py-1.5 rounded-full border border-white/40",
-                            children: "退出后台"
-                        })
-                    }),
-                    S.jsx(Mb, {
-                        onPasswordResetStart: () => r(true),
-                        onPasswordResetEnd: () => r(false)
-                    })
-                ]
+            children: S.jsx(Mb, {
+                onPasswordResetStart: () => r(true),
+                onPasswordResetEnd: () => r(false),
+                onAdminLogin: handleAdminLogin
             })
         })
     }
@@ -664,21 +801,9 @@ function Zb() {
     if (c) {
         return S.jsx("div", {
             className: "h-screen w-full bg-[#e6eef5] overflow-hidden",
-            children: S.jsxs(S.Fragment, {
-                children: [
-                    S.jsx("div", {
-                        className: "absolute top-4 right-4 z-50",
-                        children: S.jsx("button", {
-                            onClick: handleAdminLogout,
-                            className: "text-xs text-slate-400 hover:text-slate-600 transition-colors bg-white/30 backdrop-blur-sm px-3 py-1.5 rounded-full border border-white/40",
-                            children: "退出后台"
-                        })
-                    }),
-                    S.jsx(Ib, {
-                        onLogout: f,
-                        onKickOthers: m
-                    })
-                ]
+            children: S.jsx(Ib, {
+                onLogout: f,
+                onKickOthers: m
             })
         })
     }
@@ -698,14 +823,6 @@ function Zb() {
             height: "var(--echoes-app-height, 100vh)"
         },
         children: [
-            S.jsx("div", {
-                className: "absolute top-4 right-4 z-50",
-                children: S.jsx("button", {
-                    onClick: handleAdminLogout,
-                    className: "text-xs text-slate-400 hover:text-slate-600 transition-colors bg-white/30 backdrop-blur-sm px-3 py-1.5 rounded-full border border-white/40",
-                    children: "退出后台"
-                })
-            }),
             S.jsx(Hv, {
                 children: S.jsx(I.Suspense, {
                     fallback: null,
