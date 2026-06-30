@@ -95,12 +95,6 @@ ${X}`}class Ye extends Error{constructor({message:a,code:l,cause:r,name:c}){var 
 function Zb() {
     const { session: s, loading: a, isPasswordResetInProgress: l, setIsPasswordResetInProgress: r } = zb()
     const { blocked: c, checking: h, logout: f, kickOthers: m } = Gb(!!s)
-    
-    // --- 新增: 密码门状态 ---
-    const [passwordInput, setPasswordInput] = I.useState("")
-    const [passwordError, setPasswordError] = I.useState("")
-    const [isPasswordVerified, setIsPasswordVerified] = I.useState(false)
-
     const [v, g] = I.useState(false)
     const [y, _] = I.useState(false)
     const [T, x] = I.useState(true)
@@ -117,6 +111,13 @@ function Zb() {
             return false
         }
     })
+    // 后台密码验证状态
+    const [adminPassword, setAdminPassword] = I.useState('')
+    const [passwordError, setPasswordError] = I.useState('')
+    const [isAuthenticated, setIsAuthenticated] = I.useState(() => {
+        return localStorage.getItem('admin_auth') === '1'
+    })
+    const [isVerifying, setIsVerifying] = I.useState(false)
 
     const G = I.useCallback(() => {
         ve(true);
@@ -130,15 +131,34 @@ function Zb() {
         }
     }, [])
 
-    // --- 新增: 密码验证函数 ---
-    const handlePasswordSubmit = (e: React.FormEvent) => {
+    // 后台密码验证处理
+    const handleAdminLogin = (e) => {
         e.preventDefault()
-        if (passwordInput === "123") {
-            setIsPasswordVerified(true)
-            setPasswordError("")
-        } else {
-            setPasswordError("密码错误")
+        if (!adminPassword.trim()) {
+            setPasswordError('请输入密码')
+            return
         }
+        setIsVerifying(true)
+        setPasswordError('')
+        
+        // 验证密码：123
+        if (adminPassword === '123') {
+            localStorage.setItem('admin_auth', '1')
+            setIsAuthenticated(true)
+            setAdminPassword('')
+            setPasswordError('')
+            setIsVerifying(false)
+        } else {
+            setPasswordError('密码错误，请重试')
+            setIsVerifying(false)
+            setAdminPassword('')
+        }
+    }
+
+    // 退出后台模式
+    const handleAdminLogout = () => {
+        localStorage.removeItem('admin_auth')
+        setIsAuthenticated(false)
     }
 
     I.useEffect(() => {
@@ -151,52 +171,143 @@ function Zb() {
     }, [])
 
     I.useEffect(() => {
-        !((q && Q || ee || j) && (v || j)) || !T || F.current !== null || (_(true),
-            F.current = window.setTimeout(() => {
-                x(false)
-                F.current = null
-            }, Qb))
+        if (!((q && Q || ee || j) && (v || j)) || !T || F.current !== null) return
+        _(true)
+        F.current = window.setTimeout(() => {
+            x(false)
+            F.current = null
+        }, Qb)
     }, [q, Q, v, ee, j, T])
 
     I.useEffect(() => () => {
-        F.current !== null && window.clearTimeout(F.current)
+        if (F.current !== null) window.clearTimeout(F.current)
     }, [])
 
     I.useEffect(() => {
-        q && Bm(() => import("./App-CYgIjxWH.js").then(re => re.a_), []).then(re => re.preloadAllApps()).catch(() => {}
-        ).finally(() => H(true))
+        if (q) {
+            Bm(() => import("./App-CYgIjxWH.js").then(re => re.a_), []).then(re => re.preloadAllApps()).catch(() => {}).finally(() => H(true))
+        }
     }, [q])
 
     const V = I.useCallback(() => X(true), [])
 
-    // 1. 加载中
-    if (a || s && h) {
-        return S.jsx("div", { className: "w-full h-screen" })
+    // 后台密码登录界面
+    if (!isAuthenticated) {
+        return S.jsx("div", {
+            className: "fixed inset-0 w-full h-full flex items-center justify-center bg-gradient-to-b from-[#f6fafd] via-[#ecf3f9] to-[#e6eef5]",
+            children: S.jsx("div", {
+                className: "w-full max-w-sm mx-4",
+                children: S.jsxs("div", {
+                    className: "bg-white/40 backdrop-blur-xl border border-white/60 rounded-3xl shadow-lg p-8",
+                    children: [
+                        S.jsxs("div", {
+                            className: "text-center mb-8",
+                            children: [
+                                S.jsx("h1", {
+                                    className: "text-2xl font-bold text-slate-700 tracking-wide",
+                                    children: "Echoes"
+                                }),
+                                S.jsx("p", {
+                                    className: "text-sm text-slate-500 mt-1",
+                                    children: "输入密码进入"
+                                })
+                            ]
+                        }),
+                        S.jsxs("form", {
+                            onSubmit: handleAdminLogin,
+                            className: "space-y-4",
+                            children: [
+                                S.jsx("input", {
+                                    type: "password",
+                                    placeholder: "请输入密码",
+                                    value: adminPassword,
+                                    onChange: (e) => {
+                                        setAdminPassword(e.target.value)
+                                        setPasswordError('')
+                                    },
+                                    className: "w-full bg-white/50 border border-white/60 shadow-sm backdrop-blur-md rounded-2xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#89b6d3]/20 focus:border-[#89b6d3] transition-all text-slate-800 outline-none placeholder-slate-400",
+                                    autoFocus: true,
+                                    disabled: isVerifying
+                                }),
+                                passwordError && S.jsx("p", {
+                                    className: "text-sm text-red-500 text-center bg-red-50/50 rounded-xl py-2",
+                                    children: passwordError
+                                }),
+                                S.jsx("button", {
+                                    type: "submit",
+                                    disabled: isVerifying,
+                                    className: "w-full bg-[#89b6d3] hover:bg-[#7aa8c7] disabled:opacity-50 text-white font-medium py-3 rounded-2xl transition-all shadow-sm",
+                                    children: isVerifying ? "验证中..." : "进入"
+                                })
+                            ]
+                        })
+                    ]
+                })
+            })
+        })
     }
 
-    // 2. 未登录或密码重置中 -> 显示登录页
+    // 已认证 - 显示正常内容
+    if (a || (s && h)) {
+        return S.jsx("div", {
+            className: "w-full h-screen",
+            children: S.jsxs("div", {
+                className: "absolute top-4 right-4 z-50",
+                children: [
+                    S.jsx("button", {
+                        onClick: handleAdminLogout,
+                        className: "text-xs text-slate-400 hover:text-slate-600 transition-colors bg-white/30 backdrop-blur-sm px-3 py-1.5 rounded-full border border-white/40",
+                        children: "退出后台"
+                    })
+                ]
+            })
+        })
+    }
+
     if (!s || l) {
         return S.jsx("div", {
             className: "h-screen w-full bg-[#e6eef5] overflow-hidden",
-            children: S.jsx(Mb, {
-                onPasswordResetStart: () => r(true),
-                onPasswordResetEnd: () => r(false)
+            children: S.jsxs(S.Fragment, {
+                children: [
+                    S.jsx("div", {
+                        className: "absolute top-4 right-4 z-50",
+                        children: S.jsx("button", {
+                            onClick: handleAdminLogout,
+                            className: "text-xs text-slate-400 hover:text-slate-600 transition-colors bg-white/30 backdrop-blur-sm px-3 py-1.5 rounded-full border border-white/40",
+                            children: "退出后台"
+                        })
+                    }),
+                    S.jsx(Mb, {
+                        onPasswordResetStart: () => r(true),
+                        onPasswordResetEnd: () => r(false)
+                    })
+                ]
             })
         })
     }
 
-    // 3. 设备被锁定 -> 显示设备锁定页
     if (c) {
         return S.jsx("div", {
             className: "h-screen w-full bg-[#e6eef5] overflow-hidden",
-            children: S.jsx(Ib, {
-                onLogout: f,
-                onKickOthers: m
+            children: S.jsxs(S.Fragment, {
+                children: [
+                    S.jsx("div", {
+                        className: "absolute top-4 right-4 z-50",
+                        children: S.jsx("button", {
+                            onClick: handleAdminLogout,
+                            className: "text-xs text-slate-400 hover:text-slate-600 transition-colors bg-white/30 backdrop-blur-sm px-3 py-1.5 rounded-full border border-white/40",
+                            children: "退出后台"
+                        })
+                    }),
+                    S.jsx(Ib, {
+                        onLogout: f,
+                        onKickOthers: m
+                    })
+                ]
             })
         })
     }
 
-    // 4. 显示免责声明 (如果尚未接受)
     if (!B) {
         return S.jsx("div", {
             className: "h-screen w-full bg-gradient-to-b from-[#f6fafd] via-[#ecf3f9] to-[#e6eef5] overflow-hidden",
@@ -206,66 +317,20 @@ function Zb() {
         })
     }
 
-    // 5. 密码门: 已登录、已接受协议，但未通过密码验证
-    if (!isPasswordVerified) {
-        return S.jsx("div", {
-            className: "fixed inset-0 w-full h-full flex items-center justify-center bg-gradient-to-b from-[#f6fafd] via-[#ecf3f9] to-[#e6eef5] z-[150]",
-            children: S.jsxs("div", {
-                className: "w-full max-w-sm mx-4",
-                children: [
-                    S.jsxs("div", {
-                        className: "bg-white/40 backdrop-blur-xl border border-white/60 rounded-3xl shadow-lg p-8",
-                        children: [
-                            S.jsxs("div", {
-                                className: "text-center mb-8",
-                                children: [
-                                    S.jsx("h1", {
-                                        className: "text-2xl font-bold text-slate-700 tracking-wide",
-                                        children: "Echoes"
-                                    }),
-                                    S.jsx("p", {
-                                        className: "text-sm text-slate-500 mt-1",
-                                        children: "请输入后台密码以继续"
-                                    })
-                                ]
-                            }),
-                            S.jsxs("form", {
-                                onSubmit: handlePasswordSubmit,
-                                className: "space-y-4",
-                                children: [
-                                    S.jsx("input", {
-                                        type: "password",
-                                        placeholder: "后台密码",
-                                        value: passwordInput,
-                                        onChange: (e) => setPasswordInput(e.target.value),
-                                        className: "w-full bg-white/50 border border-white/60 shadow-sm backdrop-blur-md rounded-2xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#89b6d3]/20 focus:border-[#89b6d3] transition-all text-slate-800 outline-none placeholder-slate-400",
-                                        autoFocus: true
-                                    }),
-                                    passwordError && S.jsx("p", {
-                                        className: "text-sm text-red-500 text-center bg-red-50/50 rounded-xl py-2",
-                                        children: passwordError
-                                    }),
-                                    S.jsx("button", {
-                                        type: "submit",
-                                        className: "w-full bg-[#89b6d3] hover:bg-[#7aa8c7] text-white font-medium py-3 rounded-2xl transition-all shadow-sm",
-                                        children: "进入后台"
-                                    })
-                                ]
-                            })
-                        ]
-                    })
-                ]
-            })
-        })
-    }
-
-    // 6. 主应用
     return S.jsxs("div", {
         className: "relative w-full overflow-hidden",
         style: {
             height: "var(--echoes-app-height, 100vh)"
         },
         children: [
+            S.jsx("div", {
+                className: "absolute top-4 right-4 z-50",
+                children: S.jsx("button", {
+                    onClick: handleAdminLogout,
+                    className: "text-xs text-slate-400 hover:text-slate-600 transition-colors bg-white/30 backdrop-blur-sm px-3 py-1.5 rounded-full border border-white/40",
+                    children: "退出后台"
+                })
+            }),
             S.jsx(Hv, {
                 children: S.jsx(I.Suspense, {
                     fallback: null,
